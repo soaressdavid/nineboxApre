@@ -1,30 +1,36 @@
 import { AppError } from '../../utils/errors.js';
+import { AuthorizationService } from '../../services/authorization.service.js';
 import { UserRepository } from '../users/user.repository.js';
 import { EvaluationRepository } from '../evaluations/evaluation.repository.js';
-import { CompetencyRepository } from '../competencies/competency.repository.js';
 
 class NineBoxService {
   constructor(nineBoxRepository) {
     this.nineBoxRepository = nineBoxRepository;
     this.userRepository = new UserRepository();
     this.evaluationRepository = new EvaluationRepository();
-    this.competencyRepository = new CompetencyRepository();
   }
 
-  // Classifica uma nota em BAIXO, MÉDIO ou ALTO
+  // Classifica uma nota em BAIXO (1), MÉDIO (2) ou ALTO (3)
+  // Escala 1-4: Ruim(1), Regular(2), Bom(3), Excelente(4)
+  // BAIXO: 1.0–2.0 | MÉDIO: 2.1–3.0 | ALTO: 3.1–4.0
   classifyScore(score) {
-    if (score >= 1 && score <= 1.5) {
-      return 'BAIXO';
-    } else if (score >= 1.6 && score <= 2.5) {
-      return 'MÉDIO';
-    } else if (score >= 2.6 && score <= 4) {
-      return 'ALTO';
-    }
-    return 'INDEFINIDO';
+    if (score === null || score === undefined) return 'INDEFINIDO';
+    if (score <= 2.0) return 'BAIXO';
+    if (score <= 3.0) return 'MÉDIO';
+    return 'ALTO';
+  }
+
+  // Converte score para posição 1-3 do grid
+  scoreToGridPos(score) {
+    const cls = this.classifyScore(score);
+    if (cls === 'BAIXO') return 1;
+    if (cls === 'MÉDIO') return 2;
+    if (cls === 'ALTO')  return 3;
+    return null;
   }
 
   // Calcula a categoria baseada em performance (X) e potential (Y)
-  // Escala 1-4 com faixas: BAIXO (1-1.5), MÉDIO (1.6-2.5), ALTO (2.6-4)
+  // Usa classifyScore: BAIXO (≤2.0), MÉDIO (≤3.0), ALTO (>3.0)
   calculateCategoria(performance, potential) {
     const xClass = this.classifyScore(performance);
     const yClass = this.classifyScore(potential);
@@ -45,101 +51,75 @@ class NineBoxService {
     return matriz[`${yClass}-${xClass}`] || 'Indefinido';
   }
 
-  // Calcula Performance (X) a partir das competências do tipo 'desempenho'
+  // Calcula Performance (X) e Potential (Y) a partir das avaliações RECEBIDAS pela pessoa
+  // (avaliações onde a pessoa é o avaliado, não o avaliador)
+  async calculateScoresFromEvaluations(avaliadoId) {
+    const evaluations = await this.evaluationRepository.findByAvaliado(avaliadoId, { page: 1, limit: 1000 });
+    const all = evaluations.evaluations;
+
+    const mediasDes = all
+      .filter(ev => ev.campaign?.tipoAvaliacao === 'desempenho' && ev.media != null)
+      .map(ev => ev.media);
+
+    const mediasPot = all
+      .filter(ev => ev.campaign?.tipoAvaliacao === 'potencial' && ev.media != null)
+      .map(ev => ev.media);
+
+    const performance = mediasDes.length > 0
+      ? parseFloat((mediasDes.reduce((a, b) => a + b, 0) / mediasDes.length).toFixed(2))
+      : null;
+
+    const potential = mediasPot.length > 0
+      ? parseFloat((mediasPot.reduce((a, b) => a + b, 0) / mediasPot.length).toFixed(2))
+      : null;
+
+    return { performance, potential };
+  }
+
+  // Mantidos por compatibilidade com outros pontos do código
   async calculatePerformanceFromEvaluations(avaliadoId) {
-    const evaluations = await this.evaluationRepository.findByAvaliado(avaliadoId, { page: 1, limit: 1000 });
-    
-    if (evaluations.evaluations.length === 0) {
-      return null;
-    }
-
-    // Busca competências do tipo 'desempenho'
-    const desempenhoCompetencies = await this.competencyRepository.findByTipo('desempenho');
-    const desempenhoNames = desempenhoCompetencies.map(c => c.nome);
-
-    // Extrai notas de competências de desempenho de todas as avaliações
-    let allNotas = [];
-    for (const evaluation of evaluations.evaluations) {
-      if (evaluation.criterios) {
-        for (const [competenciaNome, nota] of Object.entries(evaluation.criterios)) {
-          if (desempenhoNames.includes(competenciaNome)) {
-            allNotas.push(nota);
-          }
-        }
-      }
-    }
-
-    if (allNotas.length === 0) {
-      return null;
-    }
-
-    // Calcula média (escala 1-4, já está correta)
-    const media = allNotas.reduce((a, b) => a + b, 0) / allNotas.length;
-    const performance = media; // Já está na escala 1-4
-
-    return parseFloat(performance.toFixed(2));
+    const { performance } = await this.calculateScoresFromEvaluations(avaliadoId);
+    return performance;
   }
 
-  // Calcula Potential (Y) a partir das competências do tipo 'lideranca' ou 'comportamento'
   async calculatePotentialFromEvaluations(avaliadoId) {
-    const evaluations = await this.evaluationRepository.findByAvaliado(avaliadoId, { page: 1, limit: 1000 });
-    
-    if (evaluations.evaluations.length === 0) {
-      return null;
-    }
-
-    // Busca competências dos tipos 'lideranca' e 'comportamento'
-    const liderancaCompetencies = await this.competencyRepository.findByTipo('lideranca');
-    const comportamentoCompetencies = await this.competencyRepository.findByTipo('comportamento');
-    const potentialNames = [...liderancaCompetencies, ...comportamentoCompetencies].map(c => c.nome);
-
-    // Extrai notas de competências de potencial de todas as avaliações
-    let allNotas = [];
-    for (const evaluation of evaluations.evaluations) {
-      if (evaluation.criterios) {
-        for (const [competenciaNome, nota] of Object.entries(evaluation.criterios)) {
-          if (potentialNames.includes(competenciaNome)) {
-            allNotas.push(nota);
-          }
-        }
-      }
-    }
-
-    if (allNotas.length === 0) {
-      return null;
-    }
-
-    // Calcula média (escala 1-4, já está correta)
-    const media = allNotas.reduce((a, b) => a + b, 0) / allNotas.length;
-    const potential = media; // Já está na escala 1-4
-
-    return parseFloat(potential.toFixed(2));
+    const { potential } = await this.calculateScoresFromEvaluations(avaliadoId);
+    return potential;
   }
 
-  // Calcula Nine Box automaticamente a partir das avaliações de uma pessoa
+  // Calcula Nine Box automaticamente a partir das avaliações RECEBIDAS pela pessoa
   async calculateNineBoxFromEvaluations(avaliadoId) {
-    const [performance, potential] = await Promise.all([
-      this.calculatePerformanceFromEvaluations(avaliadoId),
-      this.calculatePotentialFromEvaluations(avaliadoId)
-    ]);
+    const { performance, potential } = await this.calculateScoresFromEvaluations(avaliadoId);
 
-    if (performance === null || potential === null) {
+    // Se não há nenhuma avaliação recebida, retorna sem dados
+    if (performance === null && potential === null) {
       return {
         avaliadoId,
         performance: null,
         potential: null,
         categoria: 'Sem dados suficientes',
-        message: 'Não há avaliações suficientes para calcular o Nine Box'
+        message: 'Não há avaliações recebidas suficientes para calcular o Nine Box'
       };
     }
 
-    const categoria = this.calculateCategoria(performance, potential);
+    // Se só tem um tipo de campanha, usa o mesmo valor para ambos os eixos
+    const perfFinal = performance ?? potential;
+    const potFinal  = potential  ?? performance;
+
+    const categoria = this.calculateCategoria(perfFinal, potFinal);
 
     return {
       avaliadoId,
-      performance,
-      potential,
-      categoria
+      performance: perfFinal,
+      potential:   potFinal,
+      gridX: this.scoreToGridPos(perfFinal),
+      gridY: this.scoreToGridPos(potFinal),
+      categoria,
+      // Valores reais recebidos (null se não houve avaliação daquele tipo)
+      performanceReal: performance,
+      potentialReal:   potential,
+      performanceInferido: performance === null,
+      potentialInferido:   potential   === null,
     };
   }
 
@@ -148,8 +128,6 @@ class NineBoxService {
     // Busca todos os usuários
     const users = await this.userRepository.findAll({ page: 1, limit: 1000 });
     const allUsers = users.users || [];
-
-    console.log('[calculateAllNineBoxes] Total de usuários:', allUsers.length);
 
     if (!allUsers || allUsers.length === 0) {
       return {
@@ -162,7 +140,6 @@ class NineBoxService {
     const allNineBoxes = await Promise.all(
       allUsers.map(async (user) => {
         const nineBox = await this.calculateNineBoxFromEvaluations(user.id);
-        console.log(`[calculateAllNineBoxes] Usuário ${user.nome} (${user.tipo}):`, nineBox);
         return {
           ...nineBox,
           id: user.id,
@@ -182,7 +159,6 @@ class NineBoxService {
 
     // Filtra apenas usuários com dados válidos (performance e potential não null)
     const validNineBoxes = allNineBoxes.filter(nb => nb.performance !== null && nb.potential !== null);
-    console.log('[calculateAllNineBoxes] NineBoxes válidos:', validNineBoxes.length, 'de', allNineBoxes.length);
 
     return {
       team: validNineBoxes,
@@ -243,10 +219,7 @@ class NineBoxService {
   }
 
   async create(data, userTipo) {
-    // Apenas gestor e admin podem criar avaliações Nine Box
-    if (userTipo === 'colaborador') {
-      throw new AppError('Sem permissão para criar avaliações Nine Box', 403);
-    }
+    AuthorizationService.forbidColaborador(userTipo);
 
     // Verifica se a pessoa existe
     const pessoa = await this.userRepository.findById(data.pessoaId);
@@ -280,9 +253,7 @@ class NineBoxService {
     }
 
     // Colaborador só pode ver suas próprias avaliações
-    if (userTipo === 'colaborador' && nineBox.pessoaId !== userId) {
-      throw new AppError('Sem permissão para ver esta avaliação', 403);
-    }
+    AuthorizationService.requireOwnerOrAdmin(nineBox.pessoaId, userId, userTipo);
 
     return nineBox;
   }
@@ -332,10 +303,7 @@ class NineBoxService {
   }
 
   async update(id, data, userTipo) {
-    // Apenas gestor e admin podem atualizar
-    if (userTipo === 'colaborador') {
-      throw new AppError('Sem permissão para atualizar avaliações Nine Box', 403);
-    }
+    AuthorizationService.forbidColaborador(userTipo);
 
     const nineBox = await this.nineBoxRepository.findById(id);
     if (!nineBox) {
@@ -383,19 +351,13 @@ class NineBoxService {
   }
 
   async getGridDistribution(userTipo) {
-    // Colaborador não pode ver distribuição geral
-    if (userTipo === 'colaborador') {
-      throw new AppError('Sem permissão para ver distribuição do grid', 403);
-    }
+    AuthorizationService.forbidColaborador(userTipo);
 
     return this.nineBoxRepository.getGridDistribution();
   }
 
   async getStatsByTipo(userTipo) {
-    // Apenas admin pode ver estatísticas por tipo
-    if (userTipo !== 'admin') {
-      throw new AppError('Sem permissão para ver estatísticas por tipo', 403);
-    }
+    AuthorizationService.requireAdmin(userTipo);
 
     return this.nineBoxRepository.getStatsByTipo();
   }

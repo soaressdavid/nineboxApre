@@ -217,6 +217,7 @@ export const MOCK_CAMPAIGNS = [
     dataFim: "2026-06-30T00:00:00.000Z",
     status: "ativa",
     tipoAlvo: "colaborador",
+    tipoAvaliacao: "desempenho",
     criterios: [
       { nome: "Qualidade técnica", descricao: "Qualidade das entregas técnicas", escala: 5 },
       { nome: "Cumprimento de prazos", descricao: "Entrega dentro dos prazos acordados", escala: 5 },
@@ -238,6 +239,7 @@ export const MOCK_CAMPAIGNS = [
     dataFim: "2026-07-15T00:00:00.000Z",
     status: "ativa",
     tipoAlvo: "colaborador",
+    tipoAvaliacao: "desempenho",
     criterios: [
       { nome: "Atendimento ao cliente interno", descricao: "Qualidade no atendimento", escala: 5 },
       { nome: "Organização", descricao: "Organização e gestão de documentos", escala: 5 },
@@ -258,6 +260,7 @@ export const MOCK_CAMPAIGNS = [
     dataFim: "2025-12-31T00:00:00.000Z",
     status: "finalizada",
     tipoAlvo: "colaborador",
+    tipoAvaliacao: "desempenho",
     criterios: [
       { nome: "Desempenho geral", descricao: "Avaliação geral do desempenho", escala: 10 },
       { nome: "Metas atingidas", descricao: "Percentual de metas atingidas", escala: 10 },
@@ -278,6 +281,7 @@ export const MOCK_CAMPAIGNS = [
     dataFim: "2026-08-31T00:00:00.000Z",
     status: "planejamento",
     tipoAlvo: "gestor",
+    tipoAvaliacao: "potencial",
     criterios: [
       { nome: "Gestão de equipe", descricao: "Capacidade de gerir e motivar a equipe", escala: 5 },
       { nome: "Resultados", descricao: "Atingimento de metas da equipe", escala: 5 },

@@ -1,4 +1,5 @@
 import { AppError } from '../../utils/errors.js';
+import { AuthorizationService } from '../../services/authorization.service.js';
 import { UserRepository } from '../users/user.repository.js';
 import { CampaignRepository } from '../campaigns/campaign.repository.js';
 import { GroupRepository } from '../groups/group.repository.js';
@@ -14,8 +15,6 @@ class EvaluationService {
   async create(userId, userTipo, data) {
     const { campaignId, avaliadoId, criterios, comentario, anonima = true } = data;
 
-    console.log('[DEBUG] create evaluation - userId:', userId, 'userTipo:', userTipo, 'data:', data);
-
     // Verifica campanha
     const campaign = await this.campaignRepository.findById(campaignId);
     if (!campaign) throw new AppError('Campanha não encontrada', 404);
@@ -23,13 +22,9 @@ class EvaluationService {
       throw new AppError('Só é possível avaliar em campanhas ativas', 400);
     }
 
-    console.log('[DEBUG] campaign.tipoAlvo:', campaign.tipoAlvo);
-
     // Verifica avaliado
     const avaliado = await this.userRepository.findById(avaliadoId);
     if (!avaliado) throw new AppError('Avaliado não encontrado', 404);
-
-    console.log('[DEBUG] avaliado.tipo:', avaliado.tipo);
 
     // Valida tipo de usuário baseado no tipoAlvo da campanha
     if (campaign.tipoAlvo === 'colaborador') {
@@ -38,9 +33,7 @@ class EvaluationService {
         throw new AppError('Esta campanha é apenas para avaliar colaboradores', 400);
       }
       // Apenas gestor ou admin pode avaliar colaboradores
-      if (userTipo !== 'gestor' && userTipo !== 'admin') {
-        throw new AppError('Sem permissão para avaliar colaboradores', 403);
-      }
+      AuthorizationService.requireGestorOrAdmin(userTipo);
       // Gestor só pode avaliar colaboradores que o admin definiu para ele nesta campanha
       if (userTipo === 'gestor') {
         const todosColaboradoresPermitidos = await this.campaignRepository.getColaboradoresDoGestorNaCampanha(campaignId, userId);
@@ -55,9 +48,7 @@ class EvaluationService {
         throw new AppError('Esta campanha é apenas para avaliar gestores', 400);
       }
       // Apenas colaborador ou admin pode avaliar gestores
-      if (userTipo !== 'colaborador' && userTipo !== 'admin') {
-        throw new AppError('Sem permissão para avaliar gestores', 403);
-      }
+      AuthorizationService.requireAnyOf(userTipo, ['colaborador', 'admin']);
       // Se colaborador está avaliando gestor, verificar se é subordinado dele
       if (userTipo === 'colaborador') {
         const isSubordinado = await this.groupRepository.exists(avaliadoId, userId);
@@ -95,6 +86,11 @@ class EvaluationService {
     this._validateCriterios(criterios, criteriosCampanha);
 
     // Calcula média
+    // Note: criterios contains per-competency averages already calculated by the frontend.
+    // This calculates a "mean of means" - averaging the competency scores themselves.
+    // This gives equal weight to each competency regardless of how many individual criteria it contains.
+    // If you need a grand average across all individual criterion responses, that calculation
+    // would need to happen in the frontend before aggregation.
     const notas = Object.values(criterios);
     const media = notas.reduce((a, b) => a + b, 0) / notas.length;
 
@@ -114,9 +110,7 @@ class EvaluationService {
     if (!evaluation) throw new AppError('Avaliação não encontrada', 404);
 
     // Colaborador só pode ver avaliações onde é o avaliado
-    if (userTipo === 'colaborador' && evaluation.avaliadoId !== userId) {
-      throw new AppError('Sem permissão para ver esta avaliação', 403);
-    }
+    AuthorizationService.requireOwnerOrAdmin(evaluation.avaliadoId, userId, userTipo);
 
     return this._sanitize(evaluation, userId, userTipo);
   }
@@ -160,14 +154,8 @@ class EvaluationService {
 
   async findByAvaliado(avaliadoId, pagination, userId, userTipo) {
     // Colaborador só pode ver as próprias avaliações recebidas
-    if (userTipo === 'colaborador' && avaliadoId !== userId) {
-      throw new AppError('Sem permissão', 403);
-    }
-
     // Gestor só pode ver avaliações recebidas se for sobre ele mesmo
-    if (userTipo === 'gestor' && avaliadoId !== userId) {
-      throw new AppError('Sem permissão', 403);
-    }
+    AuthorizationService.requireOwnerOrAdmin(avaliadoId, userId, userTipo);
 
     const result = await this.evaluationRepository.findByAvaliado(avaliadoId, pagination);
     result.evaluations = result.evaluations.map(e => this._sanitize(e, userId, userTipo));
@@ -176,14 +164,8 @@ class EvaluationService {
 
   async findByAvaliador(avaliadorId, pagination, userId, userTipo) {
     // Colaborador só pode ver as próprias avaliações feitas
-    if (userTipo === 'colaborador' && avaliadorId !== userId) {
-      throw new AppError('Sem permissão', 403);
-    }
-
     // Gestor só pode ver as próprias avaliações feitas
-    if (userTipo === 'gestor' && avaliadorId !== userId) {
-      throw new AppError('Sem permissão', 403);
-    }
+    AuthorizationService.requireOwnerOrAdmin(avaliadorId, userId, userTipo);
 
     const result = await this.evaluationRepository.findByAvaliador(avaliadorId, pagination);
     result.evaluations = result.evaluations.map(e => this._sanitize(e, userId, userTipo));
@@ -226,9 +208,7 @@ class EvaluationService {
     if (!evaluation) throw new AppError('Avaliação não encontrada', 404);
 
     // Só o avaliador ou admin pode editar
-    if (userTipo !== 'admin' && evaluation.avaliadorId !== userId) {
-      throw new AppError('Sem permissão para editar esta avaliação', 403);
-    }
+    AuthorizationService.requireOwnerOrAdmin(evaluation.avaliadorId, userId, userTipo);
 
     // Campanha deve estar ativa
     if (evaluation.campaign.status !== 'ativa') {
@@ -239,7 +219,7 @@ class EvaluationService {
 
     if (data.criterios) {
       const campaign = await this.campaignRepository.findById(evaluation.campaignId);
-      this._validateCriterios(data.criterios, campaign.criterios);
+      this._validateCriterios(data.criterios, campaign.competencias);
       const notas = Object.values(data.criterios);
       updateData.criterios = data.criterios;
       updateData.media = parseFloat((notas.reduce((a, b) => a + b, 0) / notas.length).toFixed(2));
@@ -256,18 +236,14 @@ class EvaluationService {
     const evaluation = await this.evaluationRepository.findById(id);
     if (!evaluation) throw new AppError('Avaliação não encontrada', 404);
 
-    if (userTipo !== 'admin' && evaluation.avaliadorId !== userId) {
-      throw new AppError('Sem permissão para deletar esta avaliação', 403);
-    }
+    AuthorizationService.requireOwnerOrAdmin(evaluation.avaliadorId, userId, userTipo);
 
     await this.evaluationRepository.delete(id);
     return { message: 'Avaliação deletada com sucesso' };
   }
 
   async getStatsByAvaliado(avaliadoId, userId, userTipo) {
-    if (userTipo === 'colaborador' && avaliadoId !== userId) {
-      throw new AppError('Sem permissão', 403);
-    }
+    AuthorizationService.requireOwnerOrAdmin(avaliadoId, userId, userTipo);
     return this.evaluationRepository.getStatsByAvaliado(avaliadoId);
   }
 
@@ -293,12 +269,12 @@ class EvaluationService {
       }
     }
 
-    // Valida escala de cada critério (usando escala máxima de 10 por padrão)
+    // Valida escala de cada critério (escala 1-4: Ruim, Regular, Bom, Excelente)
     for (const nome of nomesEnviados) {
       const nota = criterios[nome];
-      if (nota < 1 || nota > 10) {
+      if (nota < 1 || nota > 4) {
         throw new AppError(
-          `Nota do critério '${nome}' deve ser entre 1 e 10`,
+          `Nota do critério '${nome}' deve ser entre 1 e 4`,
           400
         );
       }

@@ -1,4 +1,5 @@
 import { AppError } from '../../utils/errors.js';
+import { AuthorizationService } from '../../services/authorization.service.js';
 import { UserRepository } from '../users/user.repository.js';
 import { EvaluationRepository } from '../evaluations/evaluation.repository.js';
 import { NineBoxRepository } from '../ninebox/ninebox.repository.js';
@@ -17,9 +18,7 @@ class ReportsService {
   }
 
   async getDashboardStats(userTipo) {
-    if (userTipo === 'colaborador') {
-      throw new AppError('Sem permissão para ver dashboard geral', 403);
-    }
+    AuthorizationService.forbidColaborador(userTipo);
 
     const [gestores, colaboradores, evaluations, nineBoxStats, competencyStats, campaigns, groupsCount] = await Promise.all([
       this.userRepository.findAll({ page: 1, limit: 1, tipo: 'gestor' }),
@@ -81,9 +80,7 @@ class ReportsService {
   }
 
   async getUserReport(userId, requestUserId, requestUserTipo) {
-    if (requestUserTipo === 'colaborador' && userId !== requestUserId) {
-      throw new AppError('Sem permissão para ver este relatório', 403);
-    }
+    AuthorizationService.requireOwnerOrAdmin(userId, requestUserId, requestUserTipo);
 
     const user = await this.userRepository.findById(userId);
     if (!user) throw new AppError('Usuário não encontrado', 404);
@@ -122,9 +119,7 @@ class ReportsService {
   }
 
   async getTeamReport(gestorId, requestUserId, requestUserTipo) {
-    if (requestUserTipo === 'colaborador') {
-      throw new AppError('Sem permissão para ver relatório de equipe', 403);
-    }
+    AuthorizationService.forbidColaborador(requestUserTipo);
     if (requestUserTipo === 'gestor' && gestorId !== requestUserId) {
       throw new AppError('Gestor só pode ver a própria equipe', 403);
     }

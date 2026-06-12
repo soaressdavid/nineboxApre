@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { AppError } from '../../utils/errors.js';
+import { AuthorizationService } from '../../services/authorization.service.js';
 
 class UserService {
   constructor(userRepository) {
@@ -114,17 +115,14 @@ class UserService {
   }
 
   async findAll(filters, userTipo) {
-    console.log(`[USER SERVICE] findAll chamado - userTipo: ${userTipo}, filters:`, filters);
-    
     // Colaborador pode listar apenas gestores (para avaliar)
     if (userTipo === 'colaborador') {
       filters.tipo = 'gestor';
-      console.log(`[USER SERVICE] Colaborador - filtrando apenas gestores`);
     }
     
     // Gestor pode listar todos exceto admin
     if (userTipo === 'gestor' && !filters.tipo) {
-      console.log(`[USER SERVICE] Gestor - listando todos exceto admin`);
+      // Filtrar admins para gestores (no service, não no repository)
     }
 
     const result = await this.userRepository.findAll(filters);
@@ -136,7 +134,6 @@ class UserService {
       result.pagination.totalPages = Math.ceil(result.users.length / (filters.limit || 10));
     }
     
-    console.log(`[USER SERVICE] Retornando ${result.users.length} usuários`);
     return result;
   }
 
@@ -147,9 +144,7 @@ class UserService {
     }
 
     // Colaborador só pode ver próprio perfil
-    if (requestUserTipo === 'colaborador' && id !== requestUserId) {
-      throw new AppError('Sem permissão para ver este usuário', 403);
-    }
+    AuthorizationService.requireOwnerOrAdmin(id, requestUserId, requestUserTipo);
 
     delete user.senha;
     return user;

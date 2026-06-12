@@ -16,7 +16,7 @@ const avaliadoSelect = {
 const defaultInclude = {
   avaliado: { select: avaliadoSelect },
   campaign: {
-    select: { id: true, nome: true, tipoAlvo: true, status: true }
+    select: { id: true, nome: true, tipoAlvo: true, tipoAvaliacao: true, status: true }
   }
 };
 

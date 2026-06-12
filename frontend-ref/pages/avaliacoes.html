@@ -223,7 +223,7 @@
 <main>
   <div class="avaliacoes-container">
     <div class="avaliacoes-header">
-      <button class="btn-sair" onclick="sairDaConta()"><i class="fa-solid fa-right-from-bracket"></i> Sair</button>
+      <button class="btn-sair" id="btn-header-action" onclick="sairDaConta()"><i class="fa-solid fa-right-from-bracket"></i> Sair</button>
     </div>
     <div class="avaliacoes-card">
       <h3 class="avaliacoes-titulo">Avaliações em aberto:</h3>
@@ -279,6 +279,15 @@
     document.body.classList.add('colaborador-mode');
   } else if (isGestor()) {
     document.body.classList.add('gestor-mode');
+  }
+
+  // Admin: troca o botão "Sair" por "Voltar"
+  if (isAdmin()) {
+    const btn = document.getElementById('btn-header-action');
+    if (btn) {
+      btn.innerHTML = '<i class="fa-solid fa-arrow-left"></i> Voltar';
+      btn.onclick = () => window.history.back();
+    }
   }
 
   async function carregarAvaliacoes() {

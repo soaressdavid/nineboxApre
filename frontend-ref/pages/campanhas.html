@@ -44,6 +44,34 @@
     .modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1100;align-items:center;justify-content:center}
     .modal-overlay.show{display:flex}
     .comp-field select{-webkit-appearance:none;-moz-appearance:none;appearance:none;background-image:url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2364748b%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");background-repeat:no-repeat;background-position:right.7em top 50%;background-size:.65em auto;padding-right:2.5em}
+    
+    /* Colaboradores por gestor */
+    .gestor-colab-card { background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+    .gestor-colab-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--border); }
+    .gestor-colab-info { display: flex; align-items: center; gap: 10px; }
+    .gestor-colab-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .gestor-colab-avatar i { color: white; font-size: 13px; }
+    .gestor-colab-nome { font-size: 13px; font-weight: 600; color: var(--text); }
+    .gestor-colab-role { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+    .gestor-colab-counter { font-size: 12px; font-weight: 600; color: var(--text-muted); background: var(--bg); border: 1px solid var(--border); padding: 3px 10px; border-radius: 100px; }
+    .gestor-colab-body { padding: 14px 18px; }
+    .gestor-colab-search { display: flex; align-items: center; gap: 8px; background: var(--bg); border: 1.5px solid var(--border); border-radius: var(--radius-sm); padding: 0 12px; margin-bottom: 10px; transition: border-color .15s; }
+    .gestor-colab-search:focus-within { border-color: var(--primary); }
+    .gestor-colab-search i { color: var(--text-muted); font-size: 12px; flex-shrink: 0; }
+    .gestor-colab-search input { border: none; background: transparent; outline: none; font-size: 13px; color: var(--text); width: 100%; padding: 9px 0; font-family: inherit; }
+    .gestor-colab-search input::placeholder { color: var(--text-muted); }
+    .gestor-colab-actions { display: flex; align-items: center; justify-content: flex-end; margin-bottom: 10px; }
+    .gestor-colab-toggle-all { font-size: 12px; color: var(--primary); background: none; border: none; cursor: pointer; font-weight: 600; padding: 0; display: flex; align-items: center; gap: 4px; }
+    .gestor-colab-toggle-all:hover { text-decoration: underline; }
+    .gestor-colab-list { display: flex; flex-direction: column; max-height: 220px; overflow-y: auto; border: 1px solid var(--border); border-radius: var(--radius-sm); }
+    .gestor-colab-list::-webkit-scrollbar { width: 6px; }
+    .gestor-colab-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    .colab-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; cursor: pointer; transition: background .12s; border-bottom: 1px solid var(--border); }
+    .colab-row:last-child { border-bottom: none; }
+    .colab-row:hover { background: var(--bg); }
+    .colab-row input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--primary); flex-shrink: 0; cursor: pointer; }
+    .colab-row-nome { font-size: 13px; color: var(--text); font-weight: 500; flex: 1; }
+    .colab-row-ra { font-size: 11px; color: var(--text-muted); margin-left: auto; }
   </style>
 </head>
 <body>
@@ -158,6 +186,13 @@
             <option value="todos">Todos</option>
           </select>
         </div>
+        <div class="comp-field">
+          <label>Tipo de avaliação * <span style="font-size:11px;color:var(--text-muted);font-weight:400">(eixo do Nine Box)</span></label>
+          <select id="f-tipo-avaliacao" style="padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:inherit;background:var(--surface);color:var(--text);width:100%">
+            <option value="desempenho">Desempenho (eixo X)</option>
+            <option value="potencial">Potencial (eixo Y)</option>
+          </select>
+        </div>
       </div>
     </div>
 
@@ -185,9 +220,11 @@
     </div>
 
     <div class="form-section" id="colaboradores-por-gestor-section" style="display:none">
-      <div class="form-section-title"><i class="fa-solid fa-users"></i> Colaboradores a Avaliar por Gestor</div>
-      <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px">
-        Para cada gestor responsavel, selecione quais colaboradores ele deve avaliar nesta campanha.
+      <div class="form-section-title">
+        <i class="fa-solid fa-user-check"></i> Colaboradores a Avaliar por Gestor
+      </div>
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:16px">
+        Para cada gestor responsável, selecione quais colaboradores ele deve avaliar nesta campanha.
       </p>
       <div id="colaboradores-por-gestor-container" style="display:flex;flex-direction:column;gap:16px">
         <!-- Será preenchido dinamicamente -->
@@ -240,27 +277,9 @@
       
       <form id="formNovaCompetencia">
         <div class="comp-row">
-          <div class="comp-field" style="flex:2">
+          <div class="comp-field" style="flex:1">
             <label for="nova-competencia-nome">Nome da competência:</label>
             <input type="text" id="nova-competencia-nome" placeholder="Ex: Delegar tarefas" required>
-          </div>
-          <div class="comp-field">
-            <label for="nova-competencia-de">Competência de:</label>
-            <select id="nova-competencia-de" required>
-              <option value="">Selecione...</option>
-              <option value="gestor">Gestor</option>
-              <option value="colaborador">Colaborador</option>
-            </select>
-          </div>
-          <div class="comp-field">
-            <label for="nova-competencia-tipo">Tipo:</label>
-            <select id="nova-competencia-tipo" required>
-              <option value="">Selecione...</option>
-              <option value="desempenho">Desempenho</option>
-              <option value="comportamento">Comportamento</option>
-              <option value="tecnica">Técnica</option>
-              <option value="lideranca">Liderança</option>
-            </select>
           </div>
         </div>
         
@@ -319,7 +338,7 @@
 
 <script type="module">
   import { requireAuth, getUser, isAdmin } from '../js/auth.js';
-  import { campaignsApi, usersApi, competenciesApi } from '../js/api.js';
+  import { campaignsApi, usersApi, competenciesApi, groupsApi } from '../js/api.js';
   import { showToast } from '../js/components/toast.js';
   import '../js/navbar.js';
 
@@ -383,6 +402,7 @@
         '<div class="camp-card-meta">' +
           '<span><i class="fa-regular fa-calendar"></i> ' + ini + ' a ' + fim + '</span>' +
           '<span><i class="fa-solid fa-users"></i> ' + labelAlvo(c.tipoAlvo) + '</span>' +
+          '<span><i class="fa-solid fa-chart-line"></i> ' + labelTipoAvaliacao(c.tipoAvaliacao) + '</span>' +
           '<span><i class="fa-solid fa-user-tie"></i> ' + gestNomes + '</span>' +
           '<span><i class="fa-solid fa-check-circle" style="color:#10b981"></i> ' + qtdAv + ' avaliacao(oes)</span>' +
         '</div>' +
@@ -397,6 +417,9 @@
   }
   function labelAlvo(a) {
     return { colaborador: 'Colaboradores', gestor: 'Gestores', todos: 'Todos' }[a] || a;
+  }
+  function labelTipoAvaliacao(t) {
+    return { desempenho: 'Desempenho (X)', potencial: 'Potencial (Y)' }[t] || 'Desempenho (X)';
   }
 
   window.filtrar = function(btn, status) {
@@ -488,6 +511,7 @@
     document.getElementById('f-inicio').value = campanha ? campanha.dataInicio.split('T')[0] : '';
     document.getElementById('f-fim').value = campanha ? campanha.dataFim.split('T')[0] : '';
     document.getElementById('f-alvo').value = campanha?.tipoAlvo || 'colaborador';
+    document.getElementById('f-tipo-avaliacao').value = campanha?.tipoAvaliacao || 'desempenho';
 
     await carregarCompetenciasChips();
     await carregarGestoresChips();
@@ -536,7 +560,7 @@
     }
   }
 
-  function renderColaboradoresPorGestor() {
+  async function renderColaboradoresPorGestor() {
     const container = document.getElementById('colaboradores-por-gestor-container');
     if (!gestoresSelecionados.size) {
       container.innerHTML = '<p style="font-size:13px;color:var(--text-muted)">Selecione gestores responsáveis primeiro.</p>';
@@ -544,33 +568,130 @@
     }
 
     const gestoresSelecionadosArray = Array.from(gestoresSelecionados);
-    container.innerHTML = gestoresSelecionadosArray.map(gestorId => {
-      const gestor = gestores.find(g => g.id === gestorId);
-      if (!gestor) return '';
+    
+    // Show loading state
+    container.innerHTML = '<p style="font-size:13px;color:var(--text-muted)"><i class="fa-solid fa-spinner fa-spin"></i> Carregando colaboradores...</p>';
+    
+    try {
+      // Fetch colaboradores for each gestor in parallel
+      const colaboradoresPorGestorData = await Promise.all(
+        gestoresSelecionadosArray.map(async gestorId => {
+          try {
+            const response = await groupsApi.getColaboradores(gestorId);
+            return {
+              gestorId,
+              colaboradores: response.data || []
+            };
+          } catch (error) {
+            console.error(`Erro ao carregar colaboradores do gestor ${gestorId}:`, error);
+            return {
+              gestorId,
+              colaboradores: []
+            };
+          }
+        })
+      );
 
-      const colaboradoresSelecionadosIds = colaboradoresPorGestor[gestorId] || [];
-      const colaboradoresOptions = colaboradores.map(c => 
-        `<option value="${c.id}" ${colaboradoresSelecionadosIds.includes(c.id) ? 'selected' : ''}>${c.nome}</option>`
-      ).join('');
+      // Render cards
+      container.innerHTML = colaboradoresPorGestorData.map(({ gestorId, colaboradores: gestorColaboradores }) => {
+        const gestor = gestores.find(g => g.id === gestorId);
+        if (!gestor) return '';
 
-      return `
-        <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px">
-          <label style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px;display:block">
-            ${gestor.nome} - Colaboradores a Avaliar
-          </label>
-          <select multiple style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;background:var(--surface);color:var(--text);min-height:120px"
-            onchange="atualizarColaboradoresGestor('${gestorId}', this)">
-            ${colaboradoresOptions}
-          </select>
-          <p style="font-size:11px;color:var(--text-muted);margin-top:4px">Segure Ctrl para selecionar múltiplos</p>
-        </div>
-      `;
-    }).join('');
+        const colaboradoresSelecionadosIds = colaboradoresPorGestor[gestorId] || [];
+        const selectedCount = colaboradoresSelecionadosIds.length;
+        const totalCount = gestorColaboradores.length;
+
+        if (totalCount === 0) {
+          return `
+            <div class="gestor-colab-card">
+              <div class="gestor-colab-header">
+                <div class="gestor-colab-info">
+                  <div class="gestor-colab-avatar"><i class="fa-solid fa-user-tie"></i></div>
+                  <div>
+                    <div class="gestor-colab-nome">${gestor.nome}</div>
+                    <div class="gestor-colab-role">Gestor Responsável</div>
+                  </div>
+                </div>
+              </div>
+              <div class="gestor-colab-body">
+                <p style="font-size:13px;color:var(--text-muted);margin:0">Nenhum colaborador subordinado cadastrado.</p>
+              </div>
+            </div>`;
+        }
+
+        const rows = gestorColaboradores.map(c => {
+          const checked = colaboradoresSelecionadosIds.includes(c.id);
+          return `
+            <label class="colab-row" data-gestor="${gestorId}" data-nome="${c.nome.toLowerCase()}" data-ra="${(c.ra || '').toLowerCase()}">
+              <input type="checkbox" value="${c.id}" ${checked ? 'checked' : ''} onchange="atualizarColaboradoresGestorCheckbox('${gestorId}')">
+              <span class="colab-row-nome">${c.nome}</span>
+              ${c.ra ? `<span class="colab-row-ra">RA ${c.ra}</span>` : ''}
+            </label>`;
+        }).join('');
+
+        return `
+          <div class="gestor-colab-card">
+            <div class="gestor-colab-header">
+              <div class="gestor-colab-info">
+                <div class="gestor-colab-avatar"><i class="fa-solid fa-user-tie"></i></div>
+                <div>
+                  <div class="gestor-colab-nome">${gestor.nome}</div>
+                  <div class="gestor-colab-role">Gestor Responsável</div>
+                </div>
+              </div>
+              <span class="gestor-colab-counter" id="badge-count-${gestorId}">${selectedCount}/${totalCount} selecionados</span>
+            </div>
+            <div class="gestor-colab-body">
+              <div class="gestor-colab-search">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" placeholder="Buscar por nome ou RA…" oninput="filtrarColaboradores('${gestorId}', this.value)">
+              </div>
+              <div class="gestor-colab-actions">
+                <button type="button" class="gestor-colab-toggle-all" onclick="toggleTodosColaboradores('${gestorId}')">
+                  <i class="fa-solid fa-check-double"></i> Selecionar todos
+                </button>
+              </div>
+              <div class="gestor-colab-list" id="colab-list-${gestorId}">
+                ${rows}
+              </div>
+            </div>
+          </div>`;
+      }).join('');
+    } catch (error) {
+      console.error('Erro ao renderizar colaboradores por gestor:', error);
+      container.innerHTML = '<p style="font-size:13px;color:var(--text-muted);color:var(--danger)">Erro ao carregar colaboradores. Tente novamente.</p>';
+    }
   }
 
-  window.atualizarColaboradoresGestor = function(gestorId, select) {
-    const selectedOptions = Array.from(select.selectedOptions).map(opt => opt.value);
-    colaboradoresPorGestor[gestorId] = new Set(selectedOptions);
+  window.atualizarColaboradoresGestorCheckbox = function(gestorId) {
+    const list = document.getElementById(`colab-list-${gestorId}`);
+    if (!list) return;
+    const all      = list.querySelectorAll('input[type="checkbox"]');
+    const checked  = list.querySelectorAll('input[type="checkbox"]:checked');
+    colaboradoresPorGestor[gestorId] = new Set(Array.from(checked).map(cb => cb.value));
+    const badge = document.getElementById(`badge-count-${gestorId}`);
+    if (badge) badge.textContent = `${checked.length}/${all.length} selecionados`;
+  };
+
+  window.filtrarColaboradores = function(gestorId, searchTerm) {
+    const items = document.querySelectorAll(`.colab-row[data-gestor="${gestorId}"]`);
+    const term = searchTerm.toLowerCase().trim();
+    items.forEach(item => {
+      const nome = item.getAttribute('data-nome') || '';
+      const ra   = item.getAttribute('data-ra')   || '';
+      item.style.display = (!term || nome.includes(term) || ra.includes(term)) ? 'flex' : 'none';
+    });
+  };
+
+  window.toggleTodosColaboradores = function(gestorId) {
+    const list = document.getElementById(`colab-list-${gestorId}`);
+    if (!list) return;
+    const visibleCbs = Array.from(list.querySelectorAll('.colab-row'))
+      .filter(row => row.style.display !== 'none')
+      .map(row => row.querySelector('input[type="checkbox"]'));
+    const allChecked = visibleCbs.every(cb => cb.checked);
+    visibleCbs.forEach(cb => { cb.checked = !allChecked; });
+    window.atualizarColaboradoresGestorCheckbox(gestorId);
   };
 
   // ─── COMPETENCIAS CHIPS ─────────────────────────────────────────────────────────
@@ -727,11 +848,9 @@
     e.preventDefault();
     
     const nome = document.getElementById('nova-competencia-nome').value.trim();
-    const competenciaDe = document.getElementById('nova-competencia-de').value;
-    const tipo = document.getElementById('nova-competencia-tipo').value;
     const descricao = document.getElementById('nova-competencia-descricao').value.trim();
     
-    if (!nome || !competenciaDe || !tipo || !descricao) {
+    if (!nome || !descricao) {
       showToast('Preencha todos os campos obrigatórios.', 'error');
       return;
     }
@@ -748,8 +867,6 @@
     try {
       const payload = {
         nome,
-        competenciaDe,
-        tipo,
         descricao,
         criterios
       };
@@ -817,6 +934,7 @@
     const inicio   = document.getElementById('f-inicio').value;
     const fim      = document.getElementById('f-fim').value;
     const tipoAlvo = document.getElementById('f-alvo').value;
+    const tipoAvaliacao = document.getElementById('f-tipo-avaliacao').value;
 
     if (!nome)   { showToast('Informe o nome da campanha.', 'error'); return; }
     if (!inicio) { showToast('Informe a data de inicio.', 'error'); return; }
@@ -832,6 +950,7 @@
       dataInicio: inicio,
       dataFim: fim,
       tipoAlvo,
+      tipoAvaliacao,
       competencyIds: Array.from(competenciasSelecionadas),
       gestorIds: Array.from(gestoresSelecionados),
       gestorColaboradores: colaboradoresPorGestor

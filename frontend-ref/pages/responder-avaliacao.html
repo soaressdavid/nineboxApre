@@ -691,6 +691,14 @@
         const r = respostas[comp.id];
         if (r?.criterios?.length) {
           const notas = r.criterios.filter(n => n != null);
+          
+          // VALIDATION: Ensure all expected criteria are present to prevent sparse array data loss
+          // If localStorage is restored with missing indices, silently dropped criteria can inflate scores
+          const expectedCount = comp.criterios?.length || 0;
+          if (notas.length < expectedCount) {
+            console.warn(`Competency "${comp.nome}" has incomplete criteria: ${notas.length}/${expectedCount} answered. This may indicate sparse array data loss from localStorage restoration.`);
+          }
+          
           criterios[comp.nome] = parseFloat((notas.reduce((a, b) => a + b, 0) / notas.length).toFixed(2));
         }
       });

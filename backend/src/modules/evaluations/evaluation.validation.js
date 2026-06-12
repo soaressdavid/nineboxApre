@@ -5,10 +5,10 @@ import Joi from 'joi';
 const createEvaluationSchema = Joi.object({
   campaignId: Joi.string().uuid().required(),
   avaliadoId: Joi.string().uuid().required(),
-  // criterios: { [nomeCriterio]: nota (number) }
+  // criterios: { [nomeCriterio]: nota (number) } — escala 1-4
   criterios: Joi.object().pattern(
     Joi.string(),
-    Joi.number().min(1).max(10)
+    Joi.number().min(1).max(4)
   ).min(1).required(),
   comentario: Joi.string().optional().allow('', null),
   anonima: Joi.boolean().optional().default(true)
@@ -17,7 +17,7 @@ const createEvaluationSchema = Joi.object({
 const updateEvaluationSchema = Joi.object({
   criterios: Joi.object().pattern(
     Joi.string(),
-    Joi.number().min(1).max(10)
+    Joi.number().min(1).max(4)
   ).optional(),
   comentario: Joi.string().optional().allow('', null)
 }).min(1);

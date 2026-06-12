@@ -1,8 +1,9 @@
 import { prisma } from '../../config/database.js';
+import { BaseRepository } from '../../repositories/base.repository.js';
 
-class UserRepository {
-  async create(data) {
-    return prisma.user.create({ data });
+class UserRepository extends BaseRepository {
+  constructor() {
+    super(prisma.user);
   }
 
   async findByEmail(email) {
@@ -11,10 +12,6 @@ class UserRepository {
 
   async findByRA(ra) {
     return prisma.user.findUnique({ where: { ra } });
-  }
-
-  async findById(id) {
-    return prisma.user.findUnique({ where: { id } });
   }
 
   async findAll({ page = 1, limit = 10, tipo, search, departamento }) {
@@ -30,71 +27,36 @@ class UserRepository {
       };
     }
 
-    console.log('[USER REPOSITORY] Query params:', { page, limit, skip, where });
+    const [users, total] = await Promise.all([
+      prisma.user.findMany({
+        where,
+        skip: skip >= 0 ? skip : 0,
+        take: limit > 0 ? limit : 10,
+        select: {
+          id: true,
+          ra: true,
+          nome: true,
+          email: true,
+          tipo: true,
+          cargo: true,
+          departamento: true,
+          foto: true,
+          createdAt: true
+        },
+        orderBy: { createdAt: 'desc' }
+      }),
+      prisma.user.count({ where })
+    ]);
 
-    try {
-      const [users, total] = await Promise.all([
-        prisma.user.findMany({
-          where,
-          skip: skip >= 0 ? skip : 0,
-          take: limit > 0 ? limit : 10,
-          select: {
-            id: true,
-            ra: true,
-            nome: true,
-            email: true,
-            tipo: true,
-            cargo: true,
-            departamento: true,
-            foto: true,
-            createdAt: true
-          },
-          orderBy: { createdAt: 'desc' }
-        }),
-        prisma.user.count({ where })
-      ]);
-
-      console.log(`[USER REPOSITORY] Query executada - Retornando ${users.length} de ${total} usuários`);
-      
-      // Debug: mostrar primeiros usuários
-      if (users.length > 0) {
-        console.log('[USER REPOSITORY] Primeiro usuário:', users[0].nome, users[0].tipo);
+    return {
+      users,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit)
       }
-
-      return {
-        users,
-        pagination: {
-          page,
-          limit,
-          total,
-          totalPages: Math.ceil(total / limit)
-        }
-      };
-    } catch (error) {
-      console.error('[USER REPOSITORY] Erro na query:', error);
-      throw error;
-    }
-  }
-
-  async update(id, data) {
-    return prisma.user.update({
-      where: { id },
-      data,
-      select: {
-        id: true,
-        ra: true,
-        nome: true,
-        email: true,
-        tipo: true,
-        cargo: true,
-        departamento: true,
-        foto: true
-      }
-    });
-  }
-
-  async delete(id) {
-    return prisma.user.delete({ where: { id } });
+    };
   }
 
   async emailExists(email) {

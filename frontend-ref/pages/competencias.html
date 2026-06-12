@@ -9,7 +9,6 @@
   <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="../css/competencias.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
   <link rel="stylesheet" href="../css/choices-custom.css">
   <script>
     (function() {
@@ -110,25 +109,6 @@
           <label for="comp-nome">Nome da competência:</label>
           <input type="text" id="comp-nome" placeholder="Ex: Delegar tarefas">
         </div>
-        <div class="comp-field">
-          <label for="comp-de">Competência de:</label>
-          <select id="comp-de">
-            <option value="">Selecione...</option>
-            <option value="gestor">Gestor</option>
-            <option value="colaborador">Colaborador</option>
-            <option value="todos">Todos</option>
-          </select>
-        </div>
-        <div class="comp-field">
-          <label for="comp-tipo">Tipo:</label>
-          <select id="comp-tipo">
-            <option value="">Selecione...</option>
-            <option value="desempenho">Desempenho</option>
-            <option value="comportamento">Comportamento</option>
-            <option value="tecnica">Técnica</option>
-            <option value="lideranca">Liderança</option>
-          </select>
-        </div>
       </div>
 
       <div class="comp-field">
@@ -184,12 +164,7 @@
   let todasCompetencias = [];
   const MAX_CRITERIOS = 10;
 
-  const TIPO_LABELS = { desempenho:'Desempenho', comportamento:'Comportamento', tecnica:'Técnica', lideranca:'Liderança' };
-  const DE_LABELS   = { gestor:'Gestor', colaborador:'Colaborador', todos:'Todos' };
-
-  // Variáveis globais para Choices.js
-  let choicesCompDe = null;
-  let choicesCompTipo = null;
+  // Variáveis globais para Choices.js removidas (tipo foi removido do formulário)
 
   // Exibe botão Nova apenas para admin
   if (isAdmin()) document.getElementById('btn-nova-comp').style.display = 'flex';
@@ -259,22 +234,7 @@
 
   // --- Choices.js ---
   function initChoices() {
-    if (choicesCompDe) choicesCompDe.destroy();
-    if (choicesCompTipo) choicesCompTipo.destroy();
-    
-    choicesCompDe = new Choices('#comp-de', {
-      searchEnabled: false,
-      itemSelectText: '',
-      shouldSort: false,
-      position: 'bottom'
-    });
-    
-    choicesCompTipo = new Choices('#comp-tipo', {
-      searchEnabled: false,
-      itemSelectText: '',
-      shouldSort: false,
-      position: 'bottom'
-    });
+    // Sem campos de select no formulário atual
   }
 
   async function carregarCompetencias() {
@@ -310,8 +270,6 @@
           <div class="comp-card-nome">${c.nome}</div>
           ${c.descricao ? `<div class="comp-card-desc">${c.descricao}</div>` : ''}
           <div class="comp-card-badges">
-            ${c.competenciaDe ? `<span class="comp-badge comp-badge-de">${DE_LABELS[c.competenciaDe] || c.competenciaDe}</span>` : ''}
-            ${c.tipo ? `<span class="comp-badge comp-badge-tipo">${TIPO_LABELS[c.tipo] || c.tipo}</span>` : ''}
           </div>
           ${c.criterios?.length ? `
             <div style="margin-top:8px;display:flex;flex-direction:column;gap:3px">
@@ -337,8 +295,6 @@
     // Limpa campos
     document.getElementById('comp-nome').value = '';
     document.getElementById('comp-descricao').value = '';
-    document.getElementById('comp-de').value = '';
-    document.getElementById('comp-tipo').value = '';
     
     // Inicializar Choices.js
     initChoices();
@@ -348,8 +304,6 @@
       if (comp) {
         document.getElementById('comp-nome').value = comp.nome || '';
         document.getElementById('comp-descricao').value = comp.descricao || '';
-        document.getElementById('comp-de').value = comp.competenciaDe || '';
-        document.getElementById('comp-tipo').value = comp.tipo || '';
         // Carrega critérios existentes
         renderCriterios(comp.criterios && comp.criterios.length ? comp.criterios : ['']);
       } else {
@@ -368,18 +322,14 @@
   };
 
   window.salvarCompetencia = async function() {
-    const nome         = document.getElementById('comp-nome').value.trim();
-    const descricao    = document.getElementById('comp-descricao').value.trim();
-    const competenciaDe = document.getElementById('comp-de').value;
-    const tipo         = document.getElementById('comp-tipo').value;
-    const criterios    = Array.from(document.querySelectorAll('#comp-criterios-grid textarea'))
-                           .map(t => t.value.trim()).filter(Boolean);
+    const nome      = document.getElementById('comp-nome').value.trim();
+    const descricao = document.getElementById('comp-descricao').value.trim();
+    const criterios = Array.from(document.querySelectorAll('#comp-criterios-grid textarea'))
+                        .map(t => t.value.trim()).filter(Boolean);
 
-    if (!nome)          { showToast('Digite o nome da competência.', 'error'); return; }
-    if (!descricao || descricao.length < 10) { showToast('Descrição deve ter pelo menos 10 caracteres.', 'error'); return; }
-    if (!competenciaDe) { showToast('Selecione a quem se aplica.', 'error'); return; }
-    if (!tipo)          { showToast('Selecione o tipo.', 'error'); return; }
-    if (!criterios.length) { showToast('Adicione pelo menos 1 critério.', 'error'); return; }
+    if (!nome)                              { showToast('Digite o nome da competência.', 'error'); return; }
+    if (!descricao || descricao.length < 10){ showToast('Descrição deve ter pelo menos 10 caracteres.', 'error'); return; }
+    if (!criterios.length)                  { showToast('Adicione pelo menos 1 critério.', 'error'); return; }
 
     const btn = document.getElementById('btn-salvar-comp');
     btn.disabled = true;
@@ -387,10 +337,10 @@
 
     try {
       if (editandoId) {
-        await competenciesApi.update(editandoId, { nome, descricao, tipo, competenciaDe, criterios });
+        await competenciesApi.update(editandoId, { nome, descricao, criterios });
         showToast('Competência atualizada!', 'success');
       } else {
-        await competenciesApi.create({ nome, descricao, tipo, competenciaDe, criterios });
+        await competenciesApi.create({ nome, descricao, criterios });
         showToast('Competência criada com sucesso!', 'success');
       }
       fecharFormulario();
@@ -413,7 +363,6 @@
 
   carregarCompetencias();
 </script>
-<script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
 </body>
 </html>
 

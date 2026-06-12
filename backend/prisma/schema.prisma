@@ -48,18 +48,19 @@ model GestorColaborador {
 }
 
 model EvaluationCampaign {
-  id           String               @id @default(uuid())
-  nome         String
-  descricao    String?
-  dataInicio   DateTime
-  dataFim      DateTime
-  status       CampaignStatus       @default(planejamento)
-  tipoAlvo     String
-  createdAt    DateTime             @default(now())
-  updatedAt    DateTime             @updatedAt
-  competencias CampaignCompetency[]
-  gestores     CampaignGestor[]
-  avaliacoes   Evaluation[]
+  id             String               @id @default(uuid())
+  nome           String
+  descricao      String?
+  dataInicio     DateTime
+  dataFim        DateTime
+  status         CampaignStatus       @default(planejamento)
+  tipoAlvo       String
+  tipoAvaliacao  TipoAvaliacao        @default(desempenho)
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  competencias   CampaignCompetency[]
+  gestores       CampaignGestor[]
+  avaliacoes     Evaluation[]
 
   @@index([status])
   @@map("evaluation_campaigns")
@@ -144,6 +145,7 @@ model NineBox {
   updatedAt   DateTime @updatedAt
   pessoa      User     @relation(fields: [pessoaId], references: [id], onDelete: Cascade)
 
+  @@unique([pessoaId])
   @@index([pessoaId])
   @@map("nine_box")
 }
@@ -152,8 +154,8 @@ model Competency {
   id            String               @id @default(uuid())
   nome          String               @unique
   descricao     String
-  tipo          String
-  competenciaDe String
+  tipo          String               @default("")
+  competenciaDe String               @default("")
   criterios     String[]
   createdAt     DateTime             @default(now())
   updatedAt     DateTime             @updatedAt
@@ -199,4 +201,9 @@ enum CampaignStatus {
   planejamento
   ativa
   finalizada
+}
+
+enum TipoAvaliacao {
+  desempenho
+  potencial
 }

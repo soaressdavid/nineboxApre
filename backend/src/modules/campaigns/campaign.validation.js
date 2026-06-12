@@ -41,6 +41,12 @@ const createCampaignSchema = Joi.object({
     .messages({
       'any.only': 'tipoAlvo deve ser: colaborador, gestor ou todos'
     }),
+  tipoAvaliacao: Joi.string()
+    .valid('desempenho', 'potencial')
+    .required()
+    .messages({
+      'any.only': 'tipoAvaliacao deve ser: desempenho ou potencial'
+    }),
   competencyIds: Joi.array()
     .items(Joi.string().uuid({ version: 'uuidv4' }))
     .min(1)
@@ -66,6 +72,7 @@ const updateCampaignSchema = Joi.object({
   dataInicio: Joi.date().iso().optional(),
   dataFim: Joi.date().iso().optional(),
   tipoAlvo: Joi.string().valid('colaborador', 'gestor', 'todos').optional(),
+  tipoAvaliacao: Joi.string().valid('desempenho', 'potencial').optional(),
   competencyIds: Joi.array().items(Joi.string().uuid()).min(1).max(20).optional(),
   gestorIds: Joi.array().items(Joi.string().uuid()).optional()
 }).min(1);

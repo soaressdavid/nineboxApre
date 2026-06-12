@@ -1,4 +1,5 @@
 import { AppError } from '../../utils/errors.js';
+import { AuthorizationService } from '../../services/authorization.service.js';
 
 class CompetencyService {
   constructor(competencyRepository) {
@@ -6,10 +7,7 @@ class CompetencyService {
   }
 
   async create(data, userTipo) {
-    // Apenas admin pode criar competências
-    if (userTipo !== 'admin') {
-      throw new AppError('Sem permissão para criar competências', 403);
-    }
+    AuthorizationService.requireAdmin(userTipo);
 
     // Verifica se já existe competência com esse nome
     const exists = await this.competencyRepository.exists(data.nome);
@@ -69,10 +67,7 @@ class CompetencyService {
   }
 
   async update(id, data, userTipo) {
-    // Apenas admin pode atualizar competências
-    if (userTipo !== 'admin') {
-      throw new AppError('Sem permissão para atualizar competências', 403);
-    }
+    AuthorizationService.requireAdmin(userTipo);
 
     const competency = await this.competencyRepository.findById(id);
     if (!competency) {
@@ -110,10 +105,7 @@ class CompetencyService {
   }
 
   async delete(id, userTipo) {
-    // Apenas admin pode deletar competências
-    if (userTipo !== 'admin') {
-      throw new AppError('Sem permissão para deletar competências', 403);
-    }
+    AuthorizationService.requireAdmin(userTipo);
 
     const competency = await this.competencyRepository.findById(id);
     if (!competency) {

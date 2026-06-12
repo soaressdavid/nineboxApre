@@ -1,4 +1,6 @@
 import { AppError } from '../../utils/errors.js';
+import { prisma } from '../../config/database.js';
+import { AuthorizationService } from '../../services/authorization.service.js';
 import { UserRepository } from '../users/user.repository.js';
 import { CampaignCompetencyRepository } from './campaignCompetency.repository.js';
 import { EvaluationRepository } from '../evaluations/evaluation.repository.js';
@@ -14,9 +16,7 @@ class CampaignService {
   }
 
   async create(data, userTipo) {
-    if (userTipo !== 'admin') {
-      throw new AppError('Sem permissão para criar campanhas de avaliação', 403);
-    }
+    AuthorizationService.requireAdmin(userTipo);
 
     this._validateCompetencyIds(data.competencyIds);
     this._validateDatas(data.dataInicio, data.dataFim);
@@ -31,25 +31,33 @@ class CampaignService {
       throw new AppError('tipoAlvo deve ser: colaborador, gestor ou todos', 400);
     }
 
-    // Cria a campanha sem competencyIds e criterios
-    const { competencyIds, gestorIds, gestorColaboradores, ...campaignData } = data;
-    const campaign = await this.campaignRepository.create({
-      ...campaignData,
-      gestorIds,
-      gestorColaboradores
-    });
-
-    // Associa as competências à campanha
-    if (competencyIds && competencyIds.length > 0) {
-      for (const competencyId of competencyIds) {
-        await this.campaignCompetencyRepository.create({
-          campaignId: campaign.id,
-          competencyId
-        });
-      }
+    const tiposAvaliacao = ['desempenho', 'potencial'];
+    if (!tiposAvaliacao.includes(data.tipoAvaliacao)) {
+      throw new AppError('tipoAvaliacao deve ser: desempenho ou potencial', 400);
     }
 
-    return campaign;
+    // Cria a campanha sem competencyIds e criterios
+    const { competencyIds, gestorIds, gestorColaboradores, ...campaignData } = data;
+    
+    return await prisma.$transaction(async (tx) => {
+      const campaign = await this.campaignRepository.create({
+        ...campaignData,
+        gestorIds,
+        gestorColaboradores
+      });
+
+      // Associa as competências à campanha
+      if (competencyIds && competencyIds.length > 0) {
+        await tx.campaignCompetency.createMany({
+          data: competencyIds.map(id => ({
+            campaignId: campaign.id,
+            competencyId: id
+          }))
+        });
+      }
+
+      return campaign;
+    });
   }
 
   async findById(id, userId, userTipo) {
@@ -81,9 +89,7 @@ class CampaignService {
   }
 
   async findAll(filters, userId, userTipo) {
-    if (userTipo === 'colaborador') {
-      throw new AppError('Sem permissão para listar campanhas', 403);
-    }
+    AuthorizationService.forbidColaborador(userTipo);
 
     // Gestor só vê suas próprias campanhas
     if (userTipo === 'gestor') {
@@ -94,9 +100,7 @@ class CampaignService {
   }
 
   async findActiveForGestor(gestorId, userId, userTipo) {
-    if (userTipo === 'colaborador') {
-      throw new AppError('Sem permissão', 403);
-    }
+    AuthorizationService.forbidColaborador(userTipo);
 
     // Gestor só pode ver as próprias campanhas ativas
     const targetId = userTipo === 'gestor' ? userId : gestorId;
@@ -104,9 +108,7 @@ class CampaignService {
   }
 
   async update(id, data, userTipo) {
-    if (userTipo !== 'admin') {
-      throw new AppError('Sem permissão para editar campanhas', 403);
-    }
+    AuthorizationService.requireAdmin(userTipo);
 
     const campaign = await this.campaignRepository.findById(id);
     if (!campaign) {
@@ -142,9 +144,7 @@ class CampaignService {
   }
 
   async updateStatus(id, status, userTipo) {
-    if (userTipo !== 'admin') {
-      throw new AppError('Sem permissão para alterar o status de campanhas', 403);
-    }
+    AuthorizationService.requireAdmin(userTipo);
 
     const campaign = await this.campaignRepository.findById(id);
     if (!campaign) {
@@ -168,9 +168,7 @@ class CampaignService {
   }
 
   async delete(id, userTipo) {
-    if (userTipo !== 'admin') {
-      throw new AppError('Sem permissão para deletar campanhas', 403);
-    }
+    AuthorizationService.requireAdmin(userTipo);
 
     const campaign = await this.campaignRepository.findById(id);
     if (!campaign) {
@@ -186,9 +184,7 @@ class CampaignService {
   }
 
   async getCampaignProgress(campaignId, gestorId, userId, userTipo) {
-    if (userTipo === 'colaborador') {
-      throw new AppError('Sem permissão', 403);
-    }
+    AuthorizationService.forbidColaborador(userTipo);
 
     const campaign = await this.campaignRepository.findById(campaignId);
     if (!campaign) {
@@ -200,9 +196,7 @@ class CampaignService {
   }
 
   async getResponsavelGestores(campaignId, userId, userTipo) {
-    if (userTipo === 'colaborador') {
-      throw new AppError('Sem permissão', 403);
-    }
+    AuthorizationService.forbidColaborador(userTipo);
 
     const campaign = await this.campaignRepository.findById(campaignId);
     if (!campaign) {
@@ -221,9 +215,7 @@ class CampaignService {
   }
 
   async getColaboradoresNaoAvaliados(campaignId, gestorId, userId, userTipo) {
-    if (userTipo === 'colaborador') {
-      throw new AppError('Sem permissão', 403);
-    }
+    AuthorizationService.forbidColaborador(userTipo);
 
     const campaign = await this.campaignRepository.findById(campaignId);
     if (!campaign) {
@@ -239,70 +231,51 @@ class CampaignService {
   }
 
   async getPendingCampaignsForColaborador(userId, userTipo) {
-    if (userTipo !== 'colaborador') {
-      throw new AppError('Sem permissão para acessar esta funcionalidade', 403);
-    }
+    AuthorizationService.requireColaborador(userTipo);
 
     try {
       // Busca campanhas ativas
       const campaigns = await this.campaignRepository.findAll({ status: 'ativa' });
 
+      // Buscar todas avaliações do usuário de uma vez
+      const todasAvaliacoes = await this.evaluationRepository.findByAvaliador(
+        userId, 
+        { page: 1, limit: 1000 }
+      );
+      
+      const campaignsIds = campaigns.campaigns.map(c => c.id);
+      const avaliacoesPorCampanha = todasAvaliacoes.evaluations.reduce((acc, av) => {
+        acc[av.campaignId] = true;
+        return acc;
+      }, {});
+      
+      // Buscar todos relacionamentos gestor-colaborador de uma vez
+      const gruposDoUsuario = await this.groupRepository.findGestoresByColaborador(userId);
+      const gestoresIdsDoUsuario = new Set(gruposDoUsuario.map(g => g.id));
+
       // Filtra campanhas onde o colaborador ainda não respondeu
-      const campaignsPendentes = [];
-
-      for (const campaign of campaigns.campaigns) {
-        try {
-          // Para tipoAlvo: gestor, colaborador avalia gestor
-          if (campaign.tipoAlvo === 'gestor') {
-            // Verifica se o colaborador já respondeu a esta campanha como avaliador
-            const avaliacoesFeitas = await this.evaluationRepository.findByCampaignAndAvaliador(campaign.id, userId);
-
-            if (avaliacoesFeitas.length === 0) {
-              // Verifica se o colaborador é subordinado de pelo menos um dos gestores responsáveis pela campanha
-              const gestoresResponsaveis = campaign.gestores || [];
-              let isSubordinadoDeAlgumGestor = false;
-              
-              for (const g of gestoresResponsaveis) {
-                const isSubordinado = await this.groupRepository.exists(g.gestorId, userId);
-                if (isSubordinado) {
-                  isSubordinadoDeAlgumGestor = true;
-                  break;
-                }
-              }
-              
-              if (isSubordinadoDeAlgumGestor) {
-                campaignsPendentes.push(campaign);
-              }
-            }
-          }
-          // Para tipoAlvo: colaborador, colaborador é avaliado pelo gestor (não precisa fazer nada aqui)
-          // Para tipoAlvo: todos, colaborador pode avaliar gestores que são seus responsáveis
-          else if (campaign.tipoAlvo === 'todos') {
-            // Verifica se o colaborador já respondeu a esta campanha como avaliador
-            const avaliacoesFeitas = await this.evaluationRepository.findByCampaignAndAvaliador(campaign.id, userId);
-
-            if (avaliacoesFeitas.length === 0) {
-              const gestoresResponsaveis = campaign.gestores || [];
-              let isSubordinadoDeAlgumGestor = false;
-              
-              for (const g of gestoresResponsaveis) {
-                const isSubordinado = await this.groupRepository.exists(g.gestorId, userId);
-                if (isSubordinado) {
-                  isSubordinadoDeAlgumGestor = true;
-                  break;
-                }
-              }
-              
-              if (isSubordinadoDeAlgumGestor) {
-                campaignsPendentes.push(campaign);
-              }
-            }
-          }
-        } catch (error) {
-          console.error(`Erro ao processar campanha ${campaign.id}:`, error);
-          // Continue with next campaign
+      const campaignsPendentes = campaigns.campaigns.filter(campaign => {
+        // Se já avaliou esta campanha, pular
+        if (avaliacoesPorCampanha[campaign.id]) return false;
+        
+        // Para tipoAlvo: gestor, colaborador avalia gestor
+        if (campaign.tipoAlvo === 'gestor') {
+          const temGestorResponsavel = campaign.gestores.some(g => 
+            gestoresIdsDoUsuario.has(g.gestorId)
+          );
+          return temGestorResponsavel;
         }
-      }
+        
+        // Para tipoAlvo: todos, colaborador pode avaliar gestores que são seus responsáveis
+        if (campaign.tipoAlvo === 'todos') {
+          const temGestorResponsavel = campaign.gestores.some(g => 
+            gestoresIdsDoUsuario.has(g.gestorId)
+          );
+          return temGestorResponsavel;
+        }
+        
+        return false;
+      });
 
       return campaignsPendentes;
     } catch (error) {
@@ -312,9 +285,7 @@ class CampaignService {
   }
 
   async getPendingCampaignsForGestor(userId, userTipo) {
-    if (userTipo !== 'gestor') {
-      throw new AppError('Apenas gestores podem acessar esta funcionalidade', 403);
-    }
+    AuthorizationService.requireGestor(userTipo);
 
     try {
       // Busca campanhas ativas onde o gestor é responsável

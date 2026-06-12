@@ -42,7 +42,6 @@ class NotificationService {
     this.notificationQueue.push(notification);
     
     // Em produção, enviar email real usando Nodemailer ou similar
-    console.log(`[NOTIFICATION] Email enviado para ${avaliado.email}: ${notification.subject}`);
     
     return { message: 'Notificação enviada com sucesso', notification };
   }
@@ -76,8 +75,6 @@ class NotificationService {
     };
 
     this.notificationQueue.push(notification);
-    
-    console.log(`[NOTIFICATION] Lembrete enviado para ${avaliado.email}: ${notification.subject}`);
     
     return { message: 'Lembrete enviado com sucesso', notification };
   }
@@ -115,8 +112,6 @@ class NotificationService {
 
       this.notificationQueue.push(notification);
       notifications.push(notification);
-      
-      console.log(`[NOTIFICATION] Notificação enviada para ${gestor.gestor.email}: ${notification.subject}`);
     }
 
     return { message: 'Notificações enviadas com sucesso', notifications };

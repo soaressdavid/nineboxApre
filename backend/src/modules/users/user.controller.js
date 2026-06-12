@@ -60,7 +60,6 @@ class UserController {
   async findAll(req, res, next) {
     try {
       const { page, limit, tipo, search, departamento } = req.query;
-      console.log('[USER CONTROLLER] Params recebidos:', { page, limit, tipo, search, departamento, userTipo: req.user.tipo });
       
       const result = await userService.findAll(
         { 
