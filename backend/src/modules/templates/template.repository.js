@@ -1,16 +1,9 @@
 import { prisma } from '../../config/database.js';
+import { BaseRepository } from '../../repositories/base.repository.js';
 
-class TemplateRepository {
-  async create(data) {
-    return prisma.evaluationTemplate.create({
-      data
-    });
-  }
-
-  async findById(id) {
-    return prisma.evaluationTemplate.findUnique({
-      where: { id }
-    });
+class TemplateRepository extends BaseRepository {
+  constructor() {
+    super(prisma.evaluationTemplate);
   }
 
   async findAll(filters = {}) {
@@ -36,19 +29,6 @@ class TemplateRepository {
       templates,
       pagination: { page, limit, total, totalPages: Math.ceil(total / limit) }
     };
-  }
-
-  async update(id, data) {
-    return prisma.evaluationTemplate.update({
-      where: { id },
-      data
-    });
-  }
-
-  async delete(id) {
-    return prisma.evaluationTemplate.delete({
-      where: { id }
-    });
   }
 }
 

@@ -1,12 +1,9 @@
 import { prisma } from '../../config/database.js';
+import { BaseRepository } from '../../repositories/base.repository.js';
 
-class CompetencyRepository {
-  async create(data) {
-    return prisma.competency.create({ data });
-  }
-
-  async findById(id) {
-    return prisma.competency.findUnique({ where: { id } });
+class CompetencyRepository extends BaseRepository {
+  constructor() {
+    super(prisma.competency);
   }
 
   async findAll({ page = 1, limit = 10, tipo, competenciaDe, search }) {

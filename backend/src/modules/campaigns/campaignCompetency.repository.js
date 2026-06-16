@@ -1,10 +1,9 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../../config/database.js';
+import { BaseRepository } from '../../repositories/base.repository.js';
 
-const prisma = new PrismaClient();
-
-class CampaignCompetencyRepository {
-  async create(data) {
-    return await prisma.campaignCompetency.create({ data });
+class CampaignCompetencyRepository extends BaseRepository {
+  constructor() {
+    super(prisma.campaignCompetency);
   }
 
   async findByCampaignId(campaignId) {
@@ -19,12 +18,6 @@ class CampaignCompetencyRepository {
   async deleteByCampaignId(campaignId) {
     return await prisma.campaignCompetency.deleteMany({
       where: { campaignId }
-    });
-  }
-
-  async delete(id) {
-    return await prisma.campaignCompetency.delete({
-      where: { id }
     });
   }
 }

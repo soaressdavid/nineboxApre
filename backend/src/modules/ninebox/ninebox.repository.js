@@ -1,6 +1,11 @@
 import { prisma } from '../../config/database.js';
+import { BaseRepository } from '../../repositories/base.repository.js';
 
-class NineBoxRepository {
+class NineBoxRepository extends BaseRepository {
+  constructor() {
+    super(prisma.nineBox);
+  }
+
   async create(data) {
     return prisma.nineBox.create({
       data,

@@ -1,6 +1,10 @@
 import { prisma } from '../../config/database.js';
+import { BaseRepository } from '../../repositories/base.repository.js';
 
-class CampaignRepository {
+class CampaignRepository extends BaseRepository {
+  constructor() {
+    super(prisma.evaluationCampaign);
+  }
   async create(data) {
     const { gestorIds, gestorColaboradores, ...campaignData } = data;
 

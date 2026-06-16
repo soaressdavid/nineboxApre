@@ -1,4 +1,5 @@
 import { prisma } from '../../config/database.js';
+import { BaseRepository } from '../../repositories/base.repository.js';
 
 // Campos públicos do avaliado (sem senha)
 const avaliadoSelect = {
@@ -20,7 +21,11 @@ const defaultInclude = {
   }
 };
 
-class EvaluationRepository {
+class EvaluationRepository extends BaseRepository {
+  constructor() {
+    super(prisma.evaluation);
+  }
+
   async create(data) {
     return prisma.evaluation.create({
       data,

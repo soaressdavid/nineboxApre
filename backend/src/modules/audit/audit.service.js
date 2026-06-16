@@ -1,5 +1,6 @@
 import { AppError } from '../../utils/errors.js';
 import { prisma } from '../../config/database.js';
+import { AuthorizationService } from '../../services/authorization.service.js';
 
 class AuditService {
   async logEvaluationChange(action, evaluationId, userId, userTipo, changes = {}) {
@@ -58,9 +59,7 @@ class AuditService {
   }
 
   async getAuditLogs(filters, userTipo) {
-    if (userTipo !== 'admin') {
-      throw new AppError('Apenas admins podem visualizar logs de auditoria', 403);
-    }
+    AuthorizationService.requireAdmin(userTipo);
 
     const { entityType, entityId, action, page = 1, limit = 50 } = filters;
     const skip = (page - 1) * limit;
@@ -90,9 +89,7 @@ class AuditService {
   }
 
   async getEvaluationHistory(evaluationId, userTipo) {
-    if (userTipo !== 'admin') {
-      throw new AppError('Apenas admins podem visualizar histórico de avaliações', 403);
-    }
+    AuthorizationService.requireAdmin(userTipo);
 
     const logs = await prisma.auditLog.findMany({
       where: {

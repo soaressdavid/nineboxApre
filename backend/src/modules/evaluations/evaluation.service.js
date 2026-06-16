@@ -58,6 +58,14 @@ class EvaluationService {
       }
     } else if (campaign.tipoAlvo === 'todos') {
       // Campanha para avaliar todos (bidirecional)
+      // Gestor não pode avaliar gestor
+      if (userTipo === 'gestor' && avaliado.tipo === 'gestor') {
+        throw new AppError('Gestores não podem avaliar outros gestores', 403);
+      }
+      // Colaborador não pode avaliar colaborador
+      if (userTipo === 'colaborador' && avaliado.tipo === 'colaborador') {
+        throw new AppError('Colaboradores não podem avaliar outros colaboradores', 403);
+      }
       // Se colaborador está avaliando gestor, verificar se é subordinado dele
       if (userTipo === 'colaborador' && avaliado.tipo === 'gestor') {
         const isSubordinado = await this.groupRepository.exists(avaliadoId, userId);

@@ -380,58 +380,83 @@
     
     for (const campaign of activeCampaigns) {
       if (campaign.tipoAlvo === 'gestor') {
-        // Para campanhas de gestores, encontra colaboradores que ainda não avaliaram
+        // Para campanhas de gestores: colaborador avalia SEU gestor direto
         for (const colaborador of users.filter(u => u.tipo === 'colaborador')) {
-          const alreadyEvaluated = allEvaluations.some(e => 
-            e.campaignId === campaign.id && 
-            e.avaliadorId === colaborador.id
-          );
-          if (!alreadyEvaluated) {
-            // Encontra gestores que este colaborador deve avaliar
-            const gestoresParaAvaliar = users.filter(u => u.tipo === 'gestor');
-            for (const gestor of gestoresParaAvaliar) {
-              const alreadyEvaluatedGestor = allEvaluations.some(e => 
-                e.campaignId === campaign.id && 
-                e.avaliadorId === colaborador.id &&
-                e.avaliadoId === gestor.id
-              );
-              if (!alreadyEvaluatedGestor) {
+          // Buscar o gestor direto deste colaborador
+          try {
+            const gestoresRes = await groupsApi.getGestores(colaborador.id);
+            const meusGestores = gestoresRes.data || [];
+            
+            if (meusGestores.length === 0) continue; // Colaborador sem gestor
+            
+            const meuGestorId = meusGestores[0].id;
+            
+            // Verificar se o gestor direto está nesta campanha
+            const gestorEstaNaCampanha = campaign.gestores?.some(cg => cg.gestorId === meuGestorId);
+            if (!gestorEstaNaCampanha) continue; // Gestor não está nesta campanha
+            
+            // Verificar se já avaliou
+            const alreadyEvaluated = allEvaluations.some(e => 
+              e.campaignId === campaign.id && 
+              e.avaliadorId === colaborador.id &&
+              e.avaliadoId === meuGestorId
+            );
+            
+            if (!alreadyEvaluated) {
+              const gestor = users.find(u => u.id === meuGestorId);
+              if (gestor) {
                 pending.push({
-                  id: `pending-${campaign.id}-${colaborador.id}-${gestor.id}`,
+                  id: `pending-${campaign.id}-${colaborador.id}-${meuGestorId}`,
                   campaignId: campaign.id,
-                  avaliadoId: gestor.id,
+                  avaliadoId: meuGestorId,
                   avaliadorId: colaborador.id,
                   status: 'Pendente',
                   createdAt: campaign.createdAt,
                   media: null,
-                  isPending: true
+                  isPending: true,
+                  campaign: campaign,
+                  avaliado: gestor,
+                  avaliador: colaborador
                 });
               }
             }
+          } catch (error) {
+            console.error(`Erro ao buscar gestores do colaborador ${colaborador.nome}:`, error);
           }
         }
       } else if (campaign.tipoAlvo === 'colaborador') {
-        // Para campanhas de colaboradores, encontra gestores que ainda não avaliaram
+        // Para campanhas de colaboradores: gestor avalia SEUS colaboradores
         for (const gestor of users.filter(u => u.tipo === 'gestor')) {
-          const colaboradoresDoGestor = users.filter(u => u.tipo === 'colaborador');
-          for (const colaborador of colaboradoresDoGestor) {
-            const alreadyEvaluated = allEvaluations.some(e => 
-              e.campaignId === campaign.id && 
-              e.avaliadorId === gestor.id &&
-              e.avaliadoId === colaborador.id
-            );
-            if (!alreadyEvaluated) {
-              pending.push({
-                id: `pending-${campaign.id}-${gestor.id}-${colaborador.id}`,
-                campaignId: campaign.id,
-                avaliadoId: colaborador.id,
-                avaliadorId: gestor.id,
-                status: 'Pendente',
-                createdAt: campaign.createdAt,
-                media: null,
-                isPending: true
-              });
+          try {
+            // Buscar colaboradores deste gestor
+            const colaboradoresRes = await groupsApi.getColaboradores(gestor.id);
+            const meusColaboradores = colaboradoresRes.data || [];
+            
+            for (const colaborador of meusColaboradores) {
+              const alreadyEvaluated = allEvaluations.some(e => 
+                e.campaignId === campaign.id && 
+                e.avaliadorId === gestor.id &&
+                e.avaliadoId === colaborador.id
+              );
+              
+              if (!alreadyEvaluated) {
+                pending.push({
+                  id: `pending-${campaign.id}-${gestor.id}-${colaborador.id}`,
+                  campaignId: campaign.id,
+                  avaliadoId: colaborador.id,
+                  avaliadorId: gestor.id,
+                  status: 'Pendente',
+                  createdAt: campaign.createdAt,
+                  media: null,
+                  isPending: true,
+                  campaign: campaign,
+                  avaliado: colaborador,
+                  avaliador: gestor
+                });
+              }
             }
+          } catch (error) {
+            console.error(`Erro ao buscar colaboradores do gestor ${gestor.nome}:`, error);
           }
         }
       }

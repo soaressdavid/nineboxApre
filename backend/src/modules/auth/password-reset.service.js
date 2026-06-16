@@ -1,5 +1,6 @@
 import { AppError } from '../../utils/errors.js';
 import { UserRepository } from '../users/user.repository.js';
+import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 
 class PasswordResetService {
@@ -25,8 +26,6 @@ class PasswordResetService {
     });
 
     // Em produção, enviar email com o token
-    console.log(`Token de reset para ${email}: ${resetToken}`);
-    console.log(`Link de reset: http://localhost:3000/reset-password?token=${resetToken}`);
 
     return { 
       message: 'Se o email existir, você receberá instruções para redefinir sua senha.',
@@ -51,8 +50,11 @@ class PasswordResetService {
       throw new AppError('A senha deve ter pelo menos 6 caracteres', 400);
     }
 
+    // Hash da nova senha
+    const hashedPassword = await bcrypt.hash(novaSenha, 10);
+
     // Atualiza a senha do usuário
-    await this.userRepository.update(resetData.userId, { senha: novaSenha });
+    await this.userRepository.update(resetData.userId, { senha: hashedPassword });
 
     // Remove o token usado
     this.resetTokens.delete(token);

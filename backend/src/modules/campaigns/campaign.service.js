@@ -237,45 +237,54 @@ class CampaignService {
       // Busca campanhas ativas
       const campaigns = await this.campaignRepository.findAll({ status: 'ativa' });
 
-      // Buscar todas avaliações do usuário de uma vez
+      // Buscar MEU gestor direto (colaborador tem apenas 1 gestor)
+      const meusGestores = await this.groupRepository.findGestoresByColaborador(userId);
+      
+      if (meusGestores.length === 0) {
+        // Colaborador sem gestor não tem campanhas pendentes
+        return [];
+      }
+
+      // Pegar o ID do meu gestor (assumindo apenas 1 gestor por colaborador)
+      const meuGestorId = meusGestores[0].id;
+
+      // Buscar todas as avaliações que já fiz
       const todasAvaliacoes = await this.evaluationRepository.findByAvaliador(
         userId, 
         { page: 1, limit: 1000 }
       );
-      
-      const campaignsIds = campaigns.campaigns.map(c => c.id);
-      const avaliacoesPorCampanha = todasAvaliacoes.evaluations.reduce((acc, av) => {
-        acc[av.campaignId] = true;
-        return acc;
-      }, {});
-      
-      // Buscar todos relacionamentos gestor-colaborador de uma vez
-      const gruposDoUsuario = await this.groupRepository.findGestoresByColaborador(userId);
-      const gestoresIdsDoUsuario = new Set(gruposDoUsuario.map(g => g.id));
 
-      // Filtra campanhas onde o colaborador ainda não respondeu
-      const campaignsPendentes = campaigns.campaigns.filter(campaign => {
-        // Se já avaliou esta campanha, pular
-        if (avaliacoesPorCampanha[campaign.id]) return false;
-        
-        // Para tipoAlvo: gestor, colaborador avalia gestor
-        if (campaign.tipoAlvo === 'gestor') {
-          const temGestorResponsavel = campaign.gestores.some(g => 
-            gestoresIdsDoUsuario.has(g.gestorId)
-          );
-          return temGestorResponsavel;
-        }
-        
-        // Para tipoAlvo: todos, colaborador pode avaliar gestores que são seus responsáveis
-        if (campaign.tipoAlvo === 'todos') {
-          const temGestorResponsavel = campaign.gestores.some(g => 
-            gestoresIdsDoUsuario.has(g.gestorId)
-          );
-          return temGestorResponsavel;
-        }
-        
-        return false;
+      // Criar mapa: campaignId+avaliadoId → true (para verificar se já avaliei aquele gestor naquela campanha)
+      const jaAvalieiMap = {};
+      todasAvaliacoes.evaluations.forEach(av => {
+        const key = `${av.campaignId}_${av.avaliadoId}`;
+        jaAvalieiMap[key] = true;
       });
+
+      // Filtrar campanhas pendentes
+      const campaignsPendentes = [];
+
+      for (const campaign of campaigns.campaigns) {
+        // Apenas campanhas onde colaborador pode avaliar gestor
+        if (campaign.tipoAlvo !== 'gestor' && campaign.tipoAlvo !== 'todos') {
+          continue;
+        }
+
+        // Verificar se MEU gestor está nesta campanha
+        const meuGestorEstaNaCampanha = campaign.gestores?.some(cg => cg.gestorId === meuGestorId);
+        
+        if (!meuGestorEstaNaCampanha) {
+          // Meu gestor não está nesta campanha, pular
+          continue;
+        }
+
+        // Verificar se já avaliei MEU gestor nesta campanha
+        const key = `${campaign.id}_${meuGestorId}`;
+        if (!jaAvalieiMap[key]) {
+          // Ainda não avaliei meu gestor nesta campanha
+          campaignsPendentes.push(campaign);
+        }
+      }
 
       return campaignsPendentes;
     } catch (error) {

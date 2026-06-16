@@ -7,11 +7,17 @@ class UserRepository extends BaseRepository {
   }
 
   async findByEmail(email) {
-    return prisma.user.findUnique({ where: { email } });
+    return prisma.user.findUnique({
+      where: { email },
+      select: { id: true, ra: true, nome: true, email: true, tipo: true, cargo: true, departamento: true, foto: true, createdAt: true }
+    });
   }
 
   async findByRA(ra) {
-    return prisma.user.findUnique({ where: { ra } });
+    return prisma.user.findUnique({
+      where: { ra },
+      select: { id: true, ra: true, nome: true, email: true, tipo: true, cargo: true, departamento: true, foto: true, createdAt: true }
+    });
   }
 
   async findAll({ page = 1, limit = 10, tipo, search, departamento }) {
@@ -57,6 +63,23 @@ class UserRepository extends BaseRepository {
         totalPages: Math.ceil(total / limit)
       }
     };
+  }
+
+  async update(id, data) {
+    return prisma.user.update({
+      where: { id },
+      data,
+      select: {
+        id: true,
+        ra: true,
+        nome: true,
+        email: true,
+        tipo: true,
+        cargo: true,
+        departamento: true,
+        foto: true
+      }
+    });
   }
 
   async emailExists(email) {

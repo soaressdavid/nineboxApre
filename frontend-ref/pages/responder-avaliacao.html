@@ -431,7 +431,7 @@
 
 <script type="module">
   import { requireAuth, getUser, isColaborador, isGestor, sairDaConta, toggleUserMenu } from '../js/auth.js';
-  import { campaignsApi, evaluationsApi } from '../js/api.js';
+  import { campaignsApi, evaluationsApi, groupsApi } from '../js/api.js';
   import '../js/navbar.js';
 
   requireAuth();
@@ -501,7 +501,7 @@
   // Verifica se as respostas no localStorage pertencem ao usuário atual
   const storedData = JSON.parse(localStorage.getItem('respostas_avaliacao') || '{}');
   const storedUserId = localStorage.getItem('respostas_avaliacao_userId');
-  let respostas = (storedUserId === user.userId) ? storedData : {};
+  let respostas = (storedUserId === user.id) ? storedData : {};
 
   function buildSteps() {
     steps = [];
@@ -540,8 +540,6 @@
       ];
 
       card.innerHTML = `
-        <div class="competencia-titulo">${comp.nome}</div>
-        <div class="competencia-descricao">${comp.descricao || ''}</div>
         <div class="criterio-step-info">Critério ${idx + 1} de ${comp.criterios.length}</div>
         <div class="criterio-pergunta">${criterioTexto}</div>
         <div class="notas-grid">
@@ -564,7 +562,7 @@
           if (!respostas[compId]) respostas[compId] = { criterios: [], observacao: '' };
           respostas[compId].criterios[idx] = val;
           localStorage.setItem('respostas_avaliacao', JSON.stringify(respostas));
-          localStorage.setItem('respostas_avaliacao_userId', user.userId);
+          localStorage.setItem('respostas_avaliacao_userId', user.id);
 
           // Visual
           card.querySelectorAll('.nota-btn').forEach(btn => {
@@ -598,7 +596,7 @@
         if (!respostas[compId]) respostas[compId] = { criterios: [], observacao: '' };
         respostas[compId].observacao = e.target.value;
         localStorage.setItem('respostas_avaliacao', JSON.stringify(respostas));
-        localStorage.setItem('respostas_avaliacao_userId', user.userId);
+        localStorage.setItem('respostas_avaliacao_userId', user.id);
       });
     }
 
@@ -705,11 +703,30 @@
 
       const campaign = window.currentCampaign;
       let avaliadoId;
+      
       if (campaign.tipoAlvo === 'gestor') {
-        if (!campaign.gestores?.length) throw new Error('Nenhum gestor associado à campanha');
-        avaliadoId = campaign.gestores[0].gestorId;
+        // Buscar os gestores do colaborador logado
+        const meusGestoresResponse = await groupsApi.getGestores(user.id);
+        const meusGestores = meusGestoresResponse.data || [];
+        
+        console.log('Meus gestores:', meusGestores);
+        console.log('Gestores da campanha:', campaign.gestores);
+        
+        // Encontrar qual dos meus gestores está nesta campanha
+        const gestorParaAvaliar = campaign.gestores?.find(cg => 
+          meusGestores.some(mg => mg.id === cg.gestorId)
+        );
+        
+        if (!gestorParaAvaliar) {
+          throw new Error('Você não tem permissão para avaliar nesta campanha. Apenas subordinados diretos podem avaliar seus gestores.');
+        }
+        
+        avaliadoId = gestorParaAvaliar.gestorId;
+        console.log('Avaliando gestor:', avaliadoId);
       } else {
-        avaliadoId = user.userId;
+        // Para campanhas de colaboradores, o gestor escolhe quem avaliar
+        // Isso deve ser implementado em outra tela (seleção de colaborador)
+        avaliadoId = user.id;
       }
 
       const payload = {
@@ -720,6 +737,8 @@
         anonima: true
       };
 
+      console.log('Payload da avaliação:', payload);
+      
       await evaluationsApi.create(payload);
       localStorage.removeItem('respostas_avaliacao');
       localStorage.removeItem('respostas_avaliacao_userId');
@@ -731,7 +750,10 @@
       btn.disabled = false;
       btn.textContent = 'Sim, Finalizar';
       document.getElementById('modal-finalizar').classList.remove('show');
-      alert('Erro ao enviar avaliação. Tente novamente.');
+      
+      // Mensagem de erro mais clara
+      const errorMessage = error.message || error.response?.data?.message || 'Erro ao enviar avaliação. Tente novamente.';
+      alert(errorMessage);
     }
   });
 
