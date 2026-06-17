@@ -12,12 +12,12 @@ class NineBoxService {
 
   // Classifica uma nota em BAIXO (1), MÉDIO (2) ou ALTO (3)
   // Escala 1-4: Ruim(1), Regular(2), Bom(3), Excelente(4)
-  // BAIXO: 1.0–2.0 | MÉDIO: 2.1–3.0 | ALTO: 3.1–4.0
+  // BAIXO: 1.0–2.0 | MÉDIO: 2.01–3.0 | ALTO: 3.01–4.0
   classifyScore(score) {
     if (score === null || score === undefined) return 'INDEFINIDO';
-    if (score <= 2.0) return 'BAIXO';
-    if (score <= 3.0) return 'MÉDIO';
-    return 'ALTO';
+    if (score < 2.01) return 'BAIXO';   // 1.00 a 2.00
+    if (score < 3.01) return 'MÉDIO';   // 2.01 a 3.00
+    return 'ALTO';                      // 3.01 a 4.00
   }
 
   // Converte score para posição 1-3 do grid
@@ -30,22 +30,23 @@ class NineBoxService {
   }
 
   // Calcula a categoria baseada em performance (X) e potential (Y)
-  // Usa classifyScore: BAIXO (≤2.0), MÉDIO (≤3.0), ALTO (>3.0)
+  // Usa classifyScore: BAIXO (<2.01), MÉDIO (<3.01), ALTO (>=3.01)
   calculateCategoria(performance, potential) {
     const xClass = this.classifyScore(performance);
     const yClass = this.classifyScore(potential);
 
     // Matriz (Y = Potencial | X = Desempenho)
+    // Numeração Q1-Q9: esquerda→direita, baixo→cima
     const matriz = {
-      'ALTO-BAIXO': 'Q4 (Dilema)',
-      'ALTO-MÉDIO': 'Q7 (Forte Candidato)',
+      'ALTO-BAIXO': 'Q7 (Enigma)',
+      'ALTO-MÉDIO': 'Q8 (Alto Potencial)',
       'ALTO-ALTO': 'Q9 (Estrela)',
-      'MÉDIO-BAIXO': 'Q2 (Questionável)',
-      'MÉDIO-MÉDIO': 'Q5 (Mantenedor)',
-      'MÉDIO-ALTO': 'Q8 (Alto Desempenho)',
+      'MÉDIO-BAIXO': 'Q4 (Inconsistente)',
+      'MÉDIO-MÉDIO': 'Q5 (Profissional)',
+      'MÉDIO-ALTO': 'Q6 (Destaque)',
       'BAIXO-BAIXO': 'Q1 (Insuficiente)',
-      'BAIXO-MÉDIO': 'Q3 (Eficaz)',
-      'BAIXO-ALTO': 'Q6 (Especialista)'
+      'BAIXO-MÉDIO': 'Q2 (Questionável)',
+      'BAIXO-ALTO': 'Q3 (Especialista)'
     };
 
     return matriz[`${yClass}-${xClass}`] || 'Indefinido';

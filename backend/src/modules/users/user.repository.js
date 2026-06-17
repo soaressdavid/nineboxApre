@@ -1,54 +1,85 @@
 import { prisma } from '../../config/database.js';
 import { BaseRepository } from '../../repositories/base.repository.js';
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Select reutilizável — nunca expõe senha nem deletedAt para o cliente
+// ─────────────────────────────────────────────────────────────────────────────
+const userSelect = {
+  id: true,
+  ra: true,
+  nome: true,
+  email: true,
+  tipo: true,
+  cargo: true,
+  departamento: true,
+  foto: true,
+  createdAt: true
+};
+
+// Select interno — inclui deletedAt para lógica de soft delete
+const userSelectInternal = {
+  ...userSelect,
+  deletedAt: true
+};
+
+// Select estendido — inclui senha (apenas para autenticação)
+const userSelectWithPassword = {
+  ...userSelectInternal,
+  senha: true
+};
+
 class UserRepository extends BaseRepository {
   constructor() {
     super(prisma.user);
   }
 
+  /** Busca por email sem senha — uso geral */
   async findByEmail(email) {
     return prisma.user.findUnique({
       where: { email },
-      select: { id: true, ra: true, nome: true, email: true, tipo: true, cargo: true, departamento: true, foto: true, createdAt: true }
+      select: userSelectInternal  // inclui deletedAt para verificações no service
+    });
+  }
+
+  /** Busca por email com senha — exclusivo para autenticação */
+  async findByEmailWithPassword(email) {
+    return prisma.user.findUnique({
+      where: { email },
+      select: userSelectWithPassword
     });
   }
 
   async findByRA(ra) {
     return prisma.user.findUnique({
       where: { ra },
-      select: { id: true, ra: true, nome: true, email: true, tipo: true, cargo: true, departamento: true, foto: true, createdAt: true }
+      select: userSelect
     });
   }
 
-  async findAll({ page = 1, limit = 10, tipo, search, departamento }) {
-    const skip = (page - 1) * limit;
+  async findAll({ page = 1, limit = 10, tipo, tipoIn, search, departamento, includeDeleted = false }) {
+    // Garante limit seguro para evitar divisão por zero
+    const safeLimit = limit > 0 ? limit : 10;
+    const safePage  = page  > 0 ? page  : 1;
+    const skip      = (safePage - 1) * safeLimit;
+
     const where = {};
-    
-    if (tipo) where.tipo = tipo;
+
+    // Soft delete: por padrão exclui usuários desativados
+    if (!includeDeleted) where.deletedAt = null;
+
+    // tipo: string = filtro exato; tipoIn: string[] = filtro de lista (ex: gestor excluindo admin)
+    if (tipo)         where.tipo = tipo;
+    else if (tipoIn)  where.tipo = { in: tipoIn };
+
     if (departamento) where.departamento = departamento;
-    if (search) {
-      where.nome = {
-        contains: search,
-        mode: 'insensitive'
-      };
-    }
+    if (search)       where.nome = { contains: search, mode: 'insensitive' };
 
     const [users, total] = await Promise.all([
       prisma.user.findMany({
         where,
-        skip: skip >= 0 ? skip : 0,
-        take: limit > 0 ? limit : 10,
-        select: {
-          id: true,
-          ra: true,
-          nome: true,
-          email: true,
-          tipo: true,
-          cargo: true,
-          departamento: true,
-          foto: true,
-          createdAt: true
-        },
+        skip,
+        take: safeLimit,
+        select: userSelect,
         orderBy: { createdAt: 'desc' }
       }),
       prisma.user.count({ where })
@@ -57,10 +88,10 @@ class UserRepository extends BaseRepository {
     return {
       users,
       pagination: {
-        page,
-        limit,
+        page: safePage,
+        limit: safeLimit,
         total,
-        totalPages: Math.ceil(total / limit)
+        totalPages: Math.ceil(total / safeLimit)
       }
     };
   }
@@ -69,16 +100,7 @@ class UserRepository extends BaseRepository {
     return prisma.user.update({
       where: { id },
       data,
-      select: {
-        id: true,
-        ra: true,
-        nome: true,
-        email: true,
-        tipo: true,
-        cargo: true,
-        departamento: true,
-        foto: true
-      }
+      select: userSelect
     });
   }
 
@@ -101,58 +123,47 @@ class UserRepository extends BaseRepository {
   async findByGestorId(gestorId) {
     return prisma.user.findMany({
       where: {
-        gruposComoColaborador: {
-          some: {
-            gestorId
-          }
-        }
+        deletedAt: null,
+        gruposComoColaborador: { some: { gestorId } }
       },
-      select: {
-        id: true,
-        ra: true,
-        nome: true,
-        email: true,
-        tipo: true,
-        cargo: true,
-        departamento: true,
-        foto: true
-      }
+      select: userSelect
     });
   }
 
   async findGestoresByGestorId(gestorId) {
     return prisma.user.findMany({
       where: {
-        gruposComoColaborador: {
-          some: {
-            gestorId
-          }
-        },
-        tipo: 'gestor'
+        deletedAt: null,
+        tipo: 'gestor',
+        gruposComoColaborador: { some: { gestorId } }
       },
-      select: {
-        id: true,
-        ra: true,
-        nome: true,
-        email: true,
-        tipo: true,
-        cargo: true,
-        departamento: true,
-        foto: true
-      }
+      select: userSelect
     });
   }
 
   async count() {
-    return prisma.user.count();
+    return prisma.user.count({ where: { deletedAt: null } });
   }
 
   async addGestorColaborador(gestorId, colaboradorId) {
     return prisma.gestorColaborador.create({
-      data: {
-        gestorId,
-        colaboradorId
-      }
+      data: { gestorId, colaboradorId }
+    });
+  }
+
+  /** Soft delete — marca deletedAt sem apagar fisicamente */
+  async softDelete(id) {
+    return prisma.user.update({
+      where: { id },
+      data: { deletedAt: new Date() }
+    });
+  }
+
+  /** Restaura um usuário desativado */
+  async restore(id) {
+    return prisma.user.update({
+      where: { id },
+      data: { deletedAt: null }
     });
   }
 }

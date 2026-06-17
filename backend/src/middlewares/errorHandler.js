@@ -1,7 +1,22 @@
+import logger from '../config/logger.js';
+
 const errorHandler = (err, req, res, next) => {
-  // Log apenas em desenvolvimento ou erros críticos
-  if (process.env.NODE_ENV === 'development' || err.statusCode >= 500) {
-    console.error('Erro:', err);
+  // Log estruturado com pino
+  if (err.statusCode >= 500 || !err.isOperational) {
+    logger.error({
+      err,
+      method: req.method,
+      url: req.url,
+      userId: req.user?.id
+    }, 'Erro interno do servidor');
+  } else {
+    logger.warn({
+      message: err.message,
+      statusCode: err.statusCode,
+      method: req.method,
+      url: req.url,
+      userId: req.user?.id
+    }, 'Erro operacional');
   }
 
   if (err.isOperational) {
@@ -43,7 +58,9 @@ const errorHandler = (err, req, res, next) => {
   return res.status(500).json({
     success: false,
     message: 'Erro interno do servidor',
-    errors: ['Ocorreu um erro inesperado. Tente novamente mais tarde.']
+    errors: process.env.NODE_ENV !== 'production'
+      ? [err.message]
+      : ['Ocorreu um erro inesperado. Tente novamente mais tarde.']
   });
 };
 

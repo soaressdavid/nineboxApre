@@ -179,8 +179,8 @@ async function main() {
     console.log('   admin@example.com / admin123\n');
     console.log('📊 Nine-Box criado:');
     result.rows.forEach(row => {
-      const gridX = row.performance <= 2.0 ? 1 : row.performance <= 3.0 ? 2 : 3;
-      const gridY = row.potential <= 2.0 ? 1 : row.potential <= 3.0 ? 2 : 3;
+      const gridX = row.performance < 2.01 ? 1 : row.performance < 3.01 ? 2 : 3;
+      const gridY = row.potential < 2.01 ? 1 : row.potential < 3.01 ? 2 : 3;
       console.log(`   ${row.nome}: P=${row.performance} Pot=${row.potential} → Grid(${gridX},${gridY})`);
     });
     console.log('='.repeat(50));

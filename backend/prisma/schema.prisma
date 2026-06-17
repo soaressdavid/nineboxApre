@@ -18,6 +18,7 @@ model User {
   foto                  String?
   cargo                 String?
   departamento          String?
+  deletedAt             DateTime?
   createdAt             DateTime                    @default(now())
   updatedAt             DateTime                    @updatedAt
   campanhasResponsavel  CampaignGestor[]
@@ -27,9 +28,11 @@ model User {
   gruposComoGestor      GestorColaborador[]         @relation("GestorRelation")
   nineBoxAvaliacoes     NineBox[]
   colaboradoresAvaliaveis CampaignGestorColaborador[]
+  refreshTokens         RefreshToken[]
 
   @@index([ra])
   @@index([email])
+  @@index([deletedAt])
   @@map("users")
 }
 
@@ -56,6 +59,7 @@ model EvaluationCampaign {
   status         CampaignStatus       @default(planejamento)
   tipoAlvo       String
   tipoAvaliacao  TipoAvaliacao        @default(desempenho)
+  deletedAt      DateTime?
   createdAt      DateTime             @default(now())
   updatedAt      DateTime             @updatedAt
   competencias   CampaignCompetency[]
@@ -63,6 +67,7 @@ model EvaluationCampaign {
   avaliacoes     Evaluation[]
 
   @@index([status])
+  @@index([deletedAt])
   @@map("evaluation_campaigns")
 }
 
@@ -157,6 +162,7 @@ model Competency {
   tipo          String               @default("")
   competenciaDe String               @default("")
   criterios     String[]
+  deletedAt     DateTime?
   createdAt     DateTime             @default(now())
   updatedAt     DateTime             @updatedAt
   a_melhorar    String?
@@ -165,7 +171,22 @@ model Competency {
   mediano       String?
   campaigns     CampaignCompetency[]
 
+  @@index([deletedAt])
   @@map("competencies")
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid())
+  token     String    @unique
+  userId    String
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@map("refresh_tokens")
 }
 
 model AuditLog {

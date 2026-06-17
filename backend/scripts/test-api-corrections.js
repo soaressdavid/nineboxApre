@@ -255,8 +255,8 @@ async function test6_CalculateNineBox() {
       categoriasEncontradas.add(nb.categoria);
       
       // Validar que gridX e gridY correspondem aos scores
-      const expectedGridX = nb.performance <= 2.0 ? 1 : nb.performance <= 3.0 ? 2 : 3;
-      const expectedGridY = nb.potential <= 2.0 ? 1 : nb.potential <= 3.0 ? 2 : 3;
+      const expectedGridX = nb.performance < 2.01 ? 1 : nb.performance < 3.01 ? 2 : 3;
+      const expectedGridY = nb.potential < 2.01 ? 1 : nb.potential < 3.01 ? 2 : 3;
       
       if (nb.gridX !== expectedGridX || nb.gridY !== expectedGridY) {
         log(`   ⚠️  ${nb.pessoa.nome}: Grid incorreto`, 'yellow');
@@ -314,12 +314,12 @@ async function test7_VerifyThresholds() {
 
     team.forEach(nb => {
       // Validar performance
-      const perfClass = nb.performance <= 2.0 ? 'BAIXO' : nb.performance <= 3.0 ? 'MÉDIO' : 'ALTO';
-      const perfGrid = nb.performance <= 2.0 ? 1 : nb.performance <= 3.0 ? 2 : 3;
+      const perfClass = nb.performance < 2.01 ? 'BAIXO' : nb.performance < 3.01 ? 'MÉDIO' : 'ALTO';
+      const perfGrid = nb.performance < 2.01 ? 1 : nb.performance < 3.01 ? 2 : 3;
       
       // Validar potential
-      const potClass = nb.potential <= 2.0 ? 'BAIXO' : nb.potential <= 3.0 ? 'MÉDIO' : 'ALTO';
-      const potGrid = nb.potential <= 2.0 ? 1 : nb.potential <= 3.0 ? 2 : 3;
+      const potClass = nb.potential < 2.01 ? 'BAIXO' : nb.potential < 3.01 ? 'MÉDIO' : 'ALTO';
+      const potGrid = nb.potential < 2.01 ? 1 : nb.potential < 3.01 ? 2 : 3;
       
       if (nb.gridX !== perfGrid || nb.gridY !== potGrid) {
         allCorrect = false;
