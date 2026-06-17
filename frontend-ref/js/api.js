@@ -320,6 +320,17 @@ export const usersApi = {
     }
     return api.delete(`/users/${id}`);
   },
+
+  getDepartamentos: async () => {
+    if (MOCK_MODE) {
+      // Extrai departamentos distintos dos usuários mock
+      const stored = localStorage.getItem('mock_users');
+      const users = stored ? JSON.parse(stored) : (typeof MOCK_SYSTEM_USERS !== 'undefined' ? MOCK_SYSTEM_USERS : []);
+      const deps = [...new Set(users.map(u => u.departamento).filter(Boolean))].sort();
+      return { success: true, data: deps };
+    }
+    return api.get('/users/departamentos');
+  },
 };
 
 // =============================================

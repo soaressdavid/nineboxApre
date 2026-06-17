@@ -148,6 +148,14 @@ class UserService {
 
     return { message: 'Usuário desativado com sucesso' };
   }
+
+  /**
+   * Retorna lista de departamentos distintos dos usuários ativos,
+   * ordenados alfabeticamente. Sem tabela extra — usa os dados já existentes.
+   */
+  async getDepartamentos() {
+    return this.userRepository.findDepartamentosDistintos();
+  }
 }
 
 export { UserService };

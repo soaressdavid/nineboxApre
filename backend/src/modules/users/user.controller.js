@@ -119,6 +119,18 @@ class UserController {
       next(error);
     }
   }
+
+  async getDepartamentos(req, res, next) {
+    try {
+      const departamentos = await userService.getDepartamentos();
+      return res.json({
+        success: true,
+        data: departamentos
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export { UserController };

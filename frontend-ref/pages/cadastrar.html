@@ -8,6 +8,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
+  <link rel="stylesheet" href="../css/choices-custom.css">
   <style>
     .pg-wrapper { justify-content: center; padding: 40px 20px; }
     .pg-card {
@@ -197,7 +199,7 @@
     <!-- Departamento -->
     <div class="pg-field">
       <label for="cad-departamento">Departamento</label>
-      <input type="text" id="cad-departamento" placeholder="Ex: TI, RH, Financeiro...">
+      <select id="cad-departamento"></select>
     </div>
 
     <!-- Gestor (apenas para colaboradores) -->
@@ -215,17 +217,42 @@
   </div>
 </main>
 
+<script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
 <script type="module">
   import { requireRole, requireAdmin } from '../js/auth.js';
   import { usersApi } from '../js/api.js';
   import { validateCadastroForm } from '../js/validators.js';
   import { showToast } from '../js/components/toast.js';
+  import { popularDepartamentos } from '../js/config.js';
 
   requireAdmin();
   import '../js/navbar.js';
 
   // Apenas admin pode cadastrar
   requireRole('admin');
+
+  // Carrega departamentos do backend e inicializa autocomplete
+  let choicesDepartamentoCad = null;
+
+  async function carregarDepartamentos() {
+    try {
+      const res = await usersApi.getDepartamentos();
+      popularDepartamentos('cad-departamento', res.data || []);
+    } catch {
+      popularDepartamentos('cad-departamento', []); // fallback para lista local
+    }
+
+    choicesDepartamentoCad = new Choices('#cad-departamento', {
+      searchEnabled: true,
+      searchPlaceholderValue: 'Buscar departamento...',
+      itemSelectText: '',
+      shouldSort: true,
+      position: 'bottom',
+      noResultsText: 'Nenhum departamento encontrado',
+      noChoicesText: 'Nenhum departamento disponível',
+    });
+  }
+  await carregarDepartamentos();
 
   // Carregar gestores para o select
   async function carregarGestores() {
@@ -281,9 +308,11 @@
       showToast('Usuário cadastrado com sucesso!', 'success');
 
       // Limpa o formulário
-      ['cad-ra','cad-nome','cad-email','cad-senha','cad-cargo','cad-departamento','cad-gestor'].forEach(id => {
+      ['cad-ra','cad-nome','cad-email','cad-senha','cad-cargo','cad-gestor'].forEach(id => {
         document.getElementById(id).value = '';
       });
+      // Reset do Choices.js no departamento
+      if (choicesDepartamentoCad) choicesDepartamentoCad.setChoiceByValue('');
       window.setTipoCad('colaborador');
     } catch {
       // Erro já exibido pelo api.js

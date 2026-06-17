@@ -19,6 +19,9 @@ router.put('/profile', isAdminMiddleware, validate(updateProfileSchema), (req, r
 
 router.get('/ra/:ra', isAdminMiddleware, (req, res, next) => userController.findByRA(req, res, next));
 
+// Departamentos distintos — antes de /:id para não colidir
+router.get('/departamentos', isAdminMiddleware, (req, res, next) => userController.getDepartamentos(req, res, next));
+
 // Rotas de admin
 router.get('/', isAdminMiddleware, (req, res, next) => userController.findAll(req, res, next));
 router.get('/:id', isAdminMiddleware, (req, res, next) => userController.findById(req, res, next));

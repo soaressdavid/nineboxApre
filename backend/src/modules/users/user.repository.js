@@ -166,6 +166,26 @@ class UserRepository extends BaseRepository {
       data: { deletedAt: null }
     });
   }
+
+  /**
+   * Retorna departamentos distintos dos usuários ativos, ordenados A-Z.
+   * Ignora entradas nulas ou vazias.
+   */
+  async findDepartamentosDistintos() {
+    const result = await prisma.user.findMany({
+      where: {
+        deletedAt: null,
+        departamento: { not: null }
+      },
+      select: { departamento: true },
+      distinct: ['departamento'],
+      orderBy: { departamento: 'asc' }
+    });
+
+    return result
+      .map(r => r.departamento)
+      .filter(d => d && d.trim() !== '');
+  }
 }
 
 export { UserRepository };

@@ -20,88 +20,95 @@
     })();
   </script>
   <style>
-    .rel-wrapper { align-items: flex-start; padding: 32px 20px; }
-    .rel-container { width: 100%; max-width: 960px; }
+    /* ── Layout ───────────────────────────────────────────── */
+    .rel-wrapper { align-items: flex-start; padding: 28px 20px; }
+    .rel-container { width: 100%; max-width: 1020px; }
 
-    /* Tabs */
-    .rel-tabs { display: flex; gap: 4px; margin-bottom: 24px; border-bottom: 2px solid var(--border); }
+    /* ── Tabs ─────────────────────────────────────────────── */
+    .rel-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 28px;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 5px;
+      width: fit-content;
+    }
     .rel-tab {
-      padding: 10px 20px; font-size: 13px; font-weight: 600; color: var(--text-muted);
-      cursor: pointer; border: none; background: transparent; font-family: inherit;
-      transition: all 0.2s; margin: 0; width: auto; border-bottom: 2px solid transparent;
-      margin-bottom: -2px;
-      border-radius: 8px 8px 0 0;
+      padding: 8px 22px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      font-family: inherit;
+      transition: all 0.18s;
+      margin: 0;
+      width: auto;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
     }
-    .rel-tab:hover { 
-      color: var(--primary); 
-      background: #eff6ff;
-      transform: none; 
-      box-shadow: none; 
-    }
-    .rel-tab.active { 
-      color: var(--primary); 
-      border-bottom-color: var(--primary);
-      background: #f0f9ff;
-    }
+    .rel-tab:hover { color: var(--primary); background: #eff6ff; transform: none; box-shadow: none; }
+    .rel-tab.active { color: white; background: var(--primary); box-shadow: 0 2px 8px rgba(30,58,138,0.25); }
 
-    /* Seções */
+    /* ── Seções ───────────────────────────────────────────── */
     .rel-section { display: none; }
     .rel-section.active { display: block; }
 
-    /* Stats cards */
-    .rel-stats { 
-      display: grid; 
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); 
-      gap: 14px; 
-      margin-bottom: 24px; 
+    /* ── Stats cards ──────────────────────────────────────── */
+    .rel-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-bottom: 24px;
     }
+    @media (max-width: 640px) { .rel-stats { grid-template-columns: repeat(2, 1fr); } }
     .rel-stat-card {
-      background: var(--surface); 
+      background: var(--surface);
       border: 1.5px solid var(--border);
-      border-radius: var(--radius-sm); 
-      padding: 16px 18px;
-      display: flex; 
-      align-items: center; 
-      gap: 14px; 
+      border-radius: var(--radius-sm);
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
       transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
     }
-    .rel-stat-card:hover { 
-      border-color: var(--accent); 
-      box-shadow: var(--shadow-sm); 
+    .rel-stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--primary);
+      opacity: 0;
+      transition: opacity 0.2s;
     }
+    .rel-stat-card:hover { border-color: var(--primary-light); box-shadow: var(--shadow-sm); }
+    .rel-stat-card:hover::before { opacity: 1; }
     .rel-stat-icon {
-      width: 44px; 
-      height: 44px; 
+      width: 46px;
+      height: 46px;
       border-radius: 12px;
-      background: #eff6ff; 
-      display: flex; 
-      align-items: center; 
+      background: linear-gradient(135deg, #eff6ff, #dbeafe);
+      display: flex;
+      align-items: center;
       justify-content: center;
-      color: var(--primary-light); 
-      font-size: 20px; 
+      color: var(--primary);
+      font-size: 19px;
       flex-shrink: 0;
     }
-    .rel-stat-info {
-      flex: 1;
-      min-width: 0;
-    }
-    .rel-stat-val { 
-      font-size: 24px; 
-      font-weight: 700; 
-      color: var(--primary); 
-      line-height: 1; 
-    }
-    .rel-stat-label { 
-      font-size: 12px; 
-      color: var(--text-muted); 
-      font-weight: 500; 
-      margin-top: 4px; 
-    }
+    .rel-stat-info { flex: 1; min-width: 0; }
+    .rel-stat-val { font-size: 26px; font-weight: 800; color: var(--primary); line-height: 1; letter-spacing: -0.5px; }
+    .rel-stat-label { font-size: 11px; color: var(--text-muted); font-weight: 600; margin-top: 5px; text-transform: uppercase; letter-spacing: 0.04em; }
 
-    /* Seção de usuário */
+    /* ── Busca de usuário ─────────────────────────────────── */
     .rel-user-search {
       display: flex; gap: 10px; align-items: center; margin-bottom: 20px; flex-wrap: wrap;
-      position: relative;
     }
     .rel-user-search > div {
       position: relative;
@@ -122,95 +129,163 @@
     }
     .btn-buscar-rel:hover { background: #1d4ed8; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(30,58,138,0.25); }
 
-    /* Relatório de usuário */
+    /* ── Card de relatório de usuário ─────────────────────── */
     .rel-user-card {
-      background: var(--surface); border: 1.5px solid var(--border);
-      border-radius: var(--radius); padding: 24px; margin-bottom: 20px;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-sm);
     }
-    .rel-user-header { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+    .rel-user-card-header {
+      background: linear-gradient(135deg, var(--primary) 0%, #2563eb 100%);
+      padding: 22px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
     .rel-user-avatar {
-      width: 56px; height: 56px; border-radius: 50%;
-      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      width: 58px; height: 58px; border-radius: 50%;
+      background: rgba(255,255,255,0.25);
+      border: 3px solid rgba(255,255,255,0.45);
       display: flex; align-items: center; justify-content: center;
       color: white; font-size: 20px; font-weight: 700; flex-shrink: 0; overflow: hidden;
     }
     .rel-user-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
-    .rel-user-nome { font-size: 18px; font-weight: 700; color: var(--primary); }
-    .rel-user-meta { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+    .rel-user-nome { font-size: 17px; font-weight: 700; color: white; }
+    .rel-user-meta { font-size: 12px; color: rgba(255,255,255,0.75); margin-top: 3px; }
+    .rel-user-card-body { padding: 22px 24px; }
 
-    .rel-section-title { font-size: 14px; font-weight: 700; color: var(--primary); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
-
-    /* Avaliações no relatório */
-    .rel-av-item {
-      border: 1.5px solid var(--border); border-radius: var(--radius-sm);
-      padding: 12px 14px; margin-bottom: 8px;
+    .rel-section-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
     }
-    .rel-av-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-    .rel-av-tipo { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 100px; }
+    .rel-section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+      margin-left: 4px;
+    }
+
+    /* ── Critérios ────────────────────────────────────────── */
+    .rel-criterio-card {
+      background: #f8fafc;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      text-align: center;
+      transition: border-color 0.15s;
+    }
+    .rel-criterio-card:hover { border-color: var(--primary-light); }
+    .rel-criterio-label { font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; }
+    .rel-criterio-val { font-size: 22px; font-weight: 800; color: var(--primary); line-height: 1; }
+    .rel-criterio-bar { height: 4px; background: #e2e8f0; border-radius: 2px; margin-top: 8px; overflow: hidden; }
+    .rel-criterio-bar-fill { height: 100%; background: linear-gradient(90deg, var(--primary-light), var(--primary)); border-radius: 2px; transition: width 0.6s ease; }
+
+    /* ── Avaliações ───────────────────────────────────────── */
+    .rel-av-item {
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 13px 15px;
+      margin-bottom: 8px;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .rel-av-item:hover { border-color: var(--primary-light); box-shadow: var(--shadow-sm); }
+    .rel-av-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 6px; }
+    .rel-av-tipo { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 100px; }
     .rel-av-tipo.gestor_para_colaborador { background: #dbeafe; color: #1e40af; }
     .rel-av-tipo.colaborador_para_gestor { background: #dcfce7; color: #166534; }
     .rel-av-tipo.avaliacao_360 { background: #fef3c7; color: #92400e; }
-    .rel-av-media { font-size: 14px; font-weight: 700; color: var(--primary); }
+    .rel-av-media { font-size: 15px; font-weight: 800; color: var(--primary); }
     .rel-av-data { font-size: 11px; color: var(--text-muted); }
-    .rel-av-comentario { font-size: 13px; color: var(--text-muted); font-style: italic; margin-top: 6px; }
+    .rel-av-comentario { font-size: 13px; color: var(--text-muted); font-style: italic; margin-top: 7px; padding-top: 7px; border-top: 1px solid var(--border); line-height: 1.5; }
 
     /* Nine Box no relatório */
     .rel-nb-card {
-      background: #eff6ff; border-radius: var(--radius-sm); padding: 14px 16px;
-      display: flex; align-items: center; gap: 14px;
+      background: linear-gradient(135deg, #eff6ff, #dbeafe);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      border: 1.5px solid #bfdbfe;
     }
     .rel-nb-icon { font-size: 28px; }
     .rel-nb-cat { font-size: 16px; font-weight: 700; color: var(--primary); }
     .rel-nb-meta { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
 
-    /* Exportar */
-    .btn-exportar {
-      padding: 10px 20px; background: var(--success); color: white; border: none;
-      border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; font-family: inherit;
-      cursor: pointer; transition: all 0.2s; margin: 0; width: auto;
-      display: inline-flex; align-items: center; gap: 6px;
-    }
-    .btn-exportar:hover { background: #047857; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(5,150,105,0.25); }
-
-    .btn-exportar-nb {
-      padding: 8px 16px; 
-      background: #10b981; 
-      color: white; 
-      border: none;
-      border-radius: var(--radius-sm); 
-      font-size: 13px; 
-      font-weight: 600; 
+    /* ── Nine Box export buttons ──────────────────────────── */
+    .nb-export-btn {
+      padding: 8px 16px;
+      font-size: 12.5px;
+      font-weight: 700;
       font-family: inherit;
-      cursor: pointer; 
-      transition: all 0.2s; 
-      margin: 0; 
-      width: auto;
-      display: inline-flex; 
-      align-items: center; 
+      cursor: pointer;
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
       gap: 6px;
+      transition: all 0.18s;
+      letter-spacing: 0.01em;
+      white-space: nowrap;
     }
-    .btn-exportar-nb:hover { 
-      background: #059669; 
-      transform: translateY(-1px); 
-      box-shadow: 0 4px 12px rgba(16,185,129,0.3); 
+    .nb-export-btn--primary {
+      background: linear-gradient(135deg, var(--primary), #2563eb);
+      color: white;
+      border: none;
+      box-shadow: 0 3px 10px rgba(30,58,138,0.28);
+    }
+    .nb-export-btn--primary:hover {
+      background: linear-gradient(135deg, #1d4ed8, #1e40af);
+      box-shadow: 0 5px 16px rgba(30,58,138,0.38);
+      transform: translateY(-1px);
+    }
+    .nb-export-btn--secondary {
+      background: var(--surface);
+      color: var(--primary);
+      border: 1.5px solid #bfdbfe;
+    }
+    .nb-export-btn--secondary:hover {
+      background: #eff6ff;
+      border-color: var(--primary);
+      transform: translateY(-1px);
+      box-shadow: 0 3px 10px rgba(30,58,138,0.12);
+    }
+    body.dark-mode .nb-export-btn--secondary {
+      background: #1e293b;
+      border-color: #3b82f6;
+      color: #93c5fd;
+    }
+    body.dark-mode .nb-export-btn--secondary:hover {
+      background: #1e3a5f;
     }
 
-    /* Distribuição Nine Box */
+    /* ── Nine Box Container ───────────────────────────────── */
     .nb-dist-container {
-      background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);
+      background: var(--surface);
       border-radius: var(--radius);
-      padding: 24px;
-      border: 2px solid #e0e7ff;
+      padding: 22px 24px;
+      border: 1.5px solid var(--border);
       margin-bottom: 24px;
+      box-shadow: var(--shadow-sm);
     }
     .nb-dist-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 16px;
+      margin-bottom: 6px;
     }
     .nb-dist-title {
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 700;
       color: var(--primary);
       display: flex;
@@ -415,12 +490,12 @@
     /* Cores dos ícones na legenda por categoria - correspondentes ao fundo */
     .nb-legend-item[data-perf="1"][data-pot="1"] .nb-legend-icon { color: #b91c1c; } /* Q1 Insuficiente */
     .nb-legend-item[data-perf="2"][data-pot="1"] .nb-legend-icon { color: #b45309; } /* Q2 Questionável */
-    .nb-legend-item[data-perf="3"][data-pot="1"] .nb-legend-icon { color: #a16207; } /* Q3 Eficaz */
-    .nb-legend-item[data-perf="1"][data-pot="2"] .nb-legend-icon { color: #c2410c; } /* Q4 Dilema */
-    .nb-legend-item[data-perf="2"][data-pot="2"] .nb-legend-icon { color: #047857; } /* Q5 Mantenedor */
-    .nb-legend-item[data-perf="3"][data-pot="2"] .nb-legend-icon { color: #065f46; } /* Q6 Especialista */
-    .nb-legend-item[data-perf="1"][data-pot="3"] .nb-legend-icon { color: #7e22ce; } /* Q7 Forte Candidato */
-    .nb-legend-item[data-perf="2"][data-pot="3"] .nb-legend-icon { color: #1d4ed8; } /* Q8 Alto Desempenho */
+    .nb-legend-item[data-perf="3"][data-pot="1"] .nb-legend-icon { color: #a16207; } /* Q3 Especialista */
+    .nb-legend-item[data-perf="1"][data-pot="2"] .nb-legend-icon { color: #c2410c; } /* Q4 Inconsistente */
+    .nb-legend-item[data-perf="2"][data-pot="2"] .nb-legend-icon { color: #047857; } /* Q5 Profissional */
+    .nb-legend-item[data-perf="3"][data-pot="2"] .nb-legend-icon { color: #065f46; } /* Q6 Destaque */
+    .nb-legend-item[data-perf="1"][data-pot="3"] .nb-legend-icon { color: #7e22ce; } /* Q7 Enigma */
+    .nb-legend-item[data-perf="2"][data-pot="3"] .nb-legend-icon { color: #1d4ed8; } /* Q8 Alto Potencial */
     .nb-legend-item[data-perf="3"][data-pot="3"] .nb-legend-icon { color: #059669; } /* Q9 Estrela */
     .nb-legend-text {
       flex: 1;
@@ -640,16 +715,15 @@
 
     body.dark-mode .rel-stat-card,
     body.dark-mode .rel-user-card,
-    body.dark-mode .rel-av-item { background: #1e293b; }
-    body.dark-mode .rel-stat-icon { background: #1e3a5f; }
+    body.dark-mode .nb-dist-container,
+    body.dark-mode .rel-av-item { background: #1e293b; border-color: #334155; }
+    body.dark-mode .rel-stat-icon { background: linear-gradient(135deg, #1e3a5f, #1e293b); }
+    body.dark-mode .rel-criterio-card { background: #0f172a; border-color: #334155; }
     body.dark-mode .rel-user-search select { background: #0f172a; color: #f1f5f9; border-color: #334155; }
-    body.dark-mode .rel-nb-card { background: #1e3a5f; }
-    body.dark-mode .rel-tab:hover {
-      background: #1e3a5f;
-    }
-    body.dark-mode .rel-tab.active {
-      background: #1e3a5f;
-    }
+    body.dark-mode .rel-nb-card { background: #1e3a5f; border-color: #334155; }
+    body.dark-mode .rel-tab:hover { background: #1e3a5f; color: #93c5fd; }
+    body.dark-mode .rel-tab.active { background: var(--primary); color: white; }
+    body.dark-mode .rel-tabs { background: #1e293b; border-color: #334155; }
   </style>
 </head>
 <body>
@@ -705,8 +779,12 @@
       <!-- Injetadas pelo JS conforme permissão -->
     </div>
 
-    <!-- Dashboard (gestor/admin) -->
+    <!-- ═══════════════════════════════════════════════════
+         Dashboard
+    ════════════════════════════════════════════════════ -->
     <div class="rel-section" id="tab-dashboard">
+
+      <!-- Stats -->
       <div class="rel-stats" id="dash-stats">
         <div class="rel-stat-card">
           <div class="rel-stat-icon"><i class="fa-solid fa-users"></i></div>
@@ -716,35 +794,35 @@
           </div>
         </div>
         <div class="rel-stat-card">
-          <div class="rel-stat-icon"><i class="fa-solid fa-user-tie"></i></div>
+          <div class="rel-stat-icon" style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);color:#16a34a"><i class="fa-solid fa-user-tie"></i></div>
           <div class="rel-stat-info">
             <div class="rel-stat-val" id="s-gestores">—</div>
             <div class="rel-stat-label">Gestores</div>
           </div>
         </div>
         <div class="rel-stat-card">
-          <div class="rel-stat-icon"><i class="fa-solid fa-user"></i></div>
+          <div class="rel-stat-icon" style="background:linear-gradient(135deg,#fdf4ff,#f3e8ff);color:#9333ea"><i class="fa-solid fa-user"></i></div>
           <div class="rel-stat-info">
             <div class="rel-stat-val" id="s-colaboradores">—</div>
             <div class="rel-stat-label">Colaboradores</div>
           </div>
         </div>
         <div class="rel-stat-card">
-          <div class="rel-stat-icon"><i class="fa-solid fa-star"></i></div>
+          <div class="rel-stat-icon" style="background:linear-gradient(135deg,#fff7ed,#fed7aa);color:#ea580c"><i class="fa-solid fa-star"></i></div>
           <div class="rel-stat-info">
             <div class="rel-stat-val" id="s-avaliacoes">—</div>
             <div class="rel-stat-label">Avaliações</div>
           </div>
         </div>
         <div class="rel-stat-card">
-          <div class="rel-stat-icon"><i class="fa-solid fa-chart-line"></i></div>
+          <div class="rel-stat-icon" style="background:linear-gradient(135deg,#fefce8,#fef08a);color:#ca8a04"><i class="fa-solid fa-chart-line"></i></div>
           <div class="rel-stat-info">
             <div class="rel-stat-val" id="s-media">—</div>
             <div class="rel-stat-label">Média Geral</div>
           </div>
         </div>
         <div class="rel-stat-card">
-          <div class="rel-stat-icon"><i class="fa-solid fa-th"></i></div>
+          <div class="rel-stat-icon" style="background:linear-gradient(135deg,#f0fdf4,#bbf7d0);color:#15803d"><i class="fa-solid fa-th"></i></div>
           <div class="rel-stat-info">
             <div class="rel-stat-val" id="s-ninebox">—</div>
             <div class="rel-stat-label">Nine Box</div>
@@ -752,88 +830,58 @@
         </div>
       </div>
 
+      <!-- Nine Box -->
       <div class="nb-dist-container">
         <div class="nb-dist-header">
           <div class="nb-dist-title">
-            <i class="fa-solid fa-th"></i>
+            <i class="fa-solid fa-th" style="color:var(--primary)"></i>
             Distribuição Nine Box
           </div>
-          <div style="display:flex;align-items:center;gap:12px">
-            <button class="btn-exportar-nb" onclick="abrirModalExportar()" title="Exportar relatórios">
-              <i class="fa-solid fa-file-export"></i> Exportar
+          <div style="display:flex;align-items:center;gap:8px">
+            <button class="nb-export-btn nb-export-btn--secondary" onclick="exportarNineBoxCSV()" title="Exportar Nine Box como CSV">
+              <i class="fa-solid fa-table"></i> Nine Box
             </button>
-            <div class="nb-dist-legend">
-              <div class="nb-dist-legend-item">
-                <i class="fa-solid fa-arrow-up" style="color:#10b981"></i>
-                <span>Alto</span>
-              </div>
-              <div class="nb-dist-legend-item">
-                <i class="fa-solid fa-minus" style="color:#f59e0b"></i>
-                <span>Médio</span>
-              </div>
-              <div class="nb-dist-legend-item">
-                <i class="fa-solid fa-arrow-down" style="color:#ef4444"></i>
-                <span>Baixo</span>
-              </div>
-            </div>
+            <button class="nb-export-btn nb-export-btn--primary" onclick="abrirModalExportar()">
+              <i class="fa-solid fa-file-arrow-down"></i> Exportar
+            </button>
           </div>
         </div>
-        <p style="font-size:12px;color:var(--text-muted);margin-bottom:16px">
-          <i class="fa-solid fa-hand-pointer"></i> Clique em um quadrante para ver os usuários posicionados nele
+        <p style="font-size:12px;color:var(--text-muted);margin-bottom:18px;display:flex;align-items:center;gap:5px">
+          <i class="fa-solid fa-hand-pointer" style="color:var(--primary-light)"></i>
+          Clique em um quadrante para ver os colaboradores posicionados
         </p>
-        
-        <div class="nb-dist-wrapper">
-          <!-- Eixo Y (Potencial) -->
-          <div class="nb-dist-axes">
-            <div class="nb-axis-label">POTENCIAL</div>
-          </div>
-          
-          <!-- Grid -->
-          <div style="flex:1">
-            <div class="nb-dist-grid" id="nb-dist-grid">
-              <div class="empty-state" style="grid-column:1/-1">
-                <i class="fa-solid fa-spinner fa-spin"></i>
-                <p>Carregando...</p>
-              </div>
-            </div>
 
-            <!-- Lista de Usuários -->
-            <div class="nb-users-list" id="nb-users-list">
-              <!-- Preenchido pelo JS -->
-            </div>
-            
-            <!-- Eixo X (Performance) -->
-            <div class="nb-axis-bottom" id="nb-axis-bottom">
-              <div class="nb-axis-bottom-label">BAIXO</div>
-              <div class="nb-axis-bottom-label">MÉDIO</div>
-              <div class="nb-axis-bottom-label">ALTO</div>
-            </div>
-            <div style="text-align:center;margin-top:8px;font-size:11px;font-weight:700;color:var(--primary);letter-spacing:1px" id="nb-axis-label">
-              PERFORMANCE
-            </div>
-          </div>
-          
-          <!-- Legenda lateral -->
-          <div class="nb-dist-sidebar">
+        <div class="nb-dist-wrapper">
+          <!-- Categorias à esquerda -->
+          <div class="nb-dist-sidebar" style="min-width:220px">
             <div class="nb-dist-sidebar-title">
-              <i class="fa-solid fa-list"></i>
-              Categorias
+              <i class="fa-solid fa-list-ul"></i> Categorias
             </div>
             <p style="font-size:10px;color:var(--text-muted);margin-bottom:10px;line-height:1.4">
-              <i class="fa-solid fa-hand-pointer"></i> Clique para filtrar
+              <i class="fa-solid fa-hand-pointer"></i> Clique para ver os colaboradores
             </p>
-            <div id="nb-legend-list">
-              <!-- Preenchido pelo JS -->
+            <div id="nb-legend-list"></div>
+          </div>
+
+          <!-- Lista de colaboradores da categoria selecionada -->
+          <div style="flex:1;min-width:0">
+            <div class="nb-users-list" id="nb-users-list">
+              <div class="empty-state" style="padding:32px 0">
+                <i class="fa-solid fa-hand-pointer" style="color:var(--primary-light)"></i>
+                <p>Selecione uma categoria para ver os colaboradores</p>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Relatório por usuário -->
+    <!-- ═══════════════════════════════════════════════════
+         Por Usuário
+    ════════════════════════════════════════════════════ -->
     <div class="rel-section" id="tab-usuario">
       <div class="rel-user-search">
-        <div style="flex: 1; min-width: 200px; position: relative;">
+        <div style="flex:1;min-width:200px;position:relative">
           <select id="sel-usuario">
             <option value="">Selecione um usuário...</option>
           </select>
@@ -845,10 +893,15 @@
       <div id="rel-usuario-resultado"></div>
     </div>
 
-    <!-- Meu relatório (colaborador) -->
+    <!-- ═══════════════════════════════════════════════════
+         Meu Relatório
+    ════════════════════════════════════════════════════ -->
     <div class="rel-section" id="tab-meu">
       <div id="rel-meu-resultado">
-        <div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i><p>Carregando...</p></div>
+        <div class="empty-state">
+          <i class="fa-solid fa-spinner fa-spin"></i>
+          <p>Carregando...</p>
+        </div>
       </div>
     </div>
 
@@ -856,77 +909,88 @@
 </main>
 
 <!-- Modal de Exportação -->
-<div class="modal-overlay" id="modal-exportar" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);z-index:1000;align-items:center;justify-content:center;padding:20px;">
-  <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);padding:28px;width:100%;max-width:540px;animation:slideUp 0.3s ease;border:1.5px solid var(--border);">
+<div class="modal-overlay" id="modal-exportar" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);backdrop-filter:blur(6px);z-index:1000;align-items:center;justify-content:center;padding:20px;">
+  <div class="export-modal-box">
 
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid var(--border);">
-      <div>
-        <h3 style="font-size:18px;font-weight:700;color:var(--primary);margin:0 0 4px 0;">
-          <i class="fa-solid fa-file-export"></i> Exportar Relatórios
-        </h3>
-        <p style="font-size:12px;color:var(--text-muted);margin:0;">Escolha o relatório e clique em Exportar — arquivo CSV pronto para Excel</p>
+    <!-- Header -->
+    <div class="export-modal-header">
+      <div class="export-modal-header-icon">
+        <i class="fa-solid fa-file-arrow-down"></i>
       </div>
-      <button onclick="fecharModalExportar()" style="width:32px;height:32px;border-radius:50%;background:#f1f5f9;color:var(--text-muted);border:none;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all 0.2s;">
+      <div class="export-modal-header-text">
+        <h3>Exportar para CSV</h3>
+        <p>Arquivo pronto para abrir no Excel ou Google Sheets</p>
+      </div>
+      <button class="export-modal-close" onclick="fecharModalExportar()" title="Fechar">
         <i class="fa-solid fa-xmark"></i>
       </button>
     </div>
 
-    <div style="margin-bottom:20px;">
-      <div style="display:flex;flex-direction:column;gap:8px;">
+    <!-- Options grid -->
+    <div class="export-options-grid">
 
-        <label style="display:flex;align-items:flex-start;gap:12px;padding:13px;background:#f8fafc;border:2px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;transition:all 0.2s;" class="export-option">
-          <input type="radio" name="export-type" value="ranking" checked style="width:16px;height:16px;cursor:pointer;margin-top:2px;flex-shrink:0;">
-          <div>
-            <div style="font-size:14px;font-weight:600;color:var(--text);">Ranking de Colaboradores</div>
-            <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Todos os usuários ordenados por média geral — ideal para visão gerencial rápida</div>
-          </div>
-        </label>
+      <label class="export-card" data-value="ranking">
+        <input type="radio" name="export-type" value="ranking" checked hidden>
+        <div class="export-card-icon" style="background:linear-gradient(135deg,#fef3c7,#fde68a);color:#d97706">
+          <i class="fa-solid fa-trophy"></i>
+        </div>
+        <div class="export-card-body">
+          <div class="export-card-title">Ranking de Colaboradores</div>
+          <div class="export-card-desc">Todos os colaboradores ordenados por média geral, com categoria Nine Box</div>
+        </div>
+        <div class="export-card-check"><i class="fa-solid fa-circle-check"></i></div>
+      </label>
 
-        <label style="display:flex;align-items:flex-start;gap:12px;padding:13px;background:#f8fafc;border:2px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;transition:all 0.2s;" class="export-option">
-          <input type="radio" name="export-type" value="ninebox" style="width:16px;height:16px;cursor:pointer;margin-top:2px;flex-shrink:0;">
-          <div>
-            <div style="font-size:14px;font-weight:600;color:var(--text);">Distribuição Nine Box</div>
-            <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Cada pessoa com sua categoria (ex: Q9 Estrela, Q8 Alto Desempenho), performance e potencial</div>
-          </div>
-        </label>
+      <label class="export-card" data-value="medias">
+        <input type="radio" name="export-type" value="medias" hidden>
+        <div class="export-card-icon" style="background:linear-gradient(135deg,#dbeafe,#bfdbfe);color:#2563eb">
+          <i class="fa-solid fa-chart-bar"></i>
+        </div>
+        <div class="export-card-body">
+          <div class="export-card-title">Médias por Critério</div>
+          <div class="export-card-desc">Média de cada critério de avaliação por colaborador — se adapta aos critérios configurados</div>
+        </div>
+        <div class="export-card-check"><i class="fa-solid fa-circle-check"></i></div>
+      </label>
 
-        <label style="display:flex;align-items:flex-start;gap:12px;padding:13px;background:#f8fafc;border:2px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;transition:all 0.2s;" class="export-option">
-          <input type="radio" name="export-type" value="avaliacoes" style="width:16px;height:16px;cursor:pointer;margin-top:2px;flex-shrink:0;">
-          <div>
-            <div style="font-size:14px;font-weight:600;color:var(--text);">Avaliações Detalhadas</div>
-            <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Histórico completo de avaliações com nota por critério, avaliador e comentários</div>
-          </div>
-        </label>
+      <label class="export-card" data-value="avaliacoes">
+        <input type="radio" name="export-type" value="avaliacoes" hidden>
+        <div class="export-card-icon" style="background:linear-gradient(135deg,#ede9fe,#ddd6fe);color:#7c3aed">
+          <i class="fa-solid fa-list-check"></i>
+        </div>
+        <div class="export-card-body">
+          <div class="export-card-title">Histórico de Avaliações</div>
+          <div class="export-card-desc">Todas as avaliações com avaliado, avaliador, média e comentário</div>
+        </div>
+        <div class="export-card-check"><i class="fa-solid fa-circle-check"></i></div>
+      </label>
 
-        <label style="display:flex;align-items:flex-start;gap:12px;padding:13px;background:#f8fafc;border:2px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;transition:all 0.2s;" class="export-option">
-          <input type="radio" name="export-type" value="medias" style="width:16px;height:16px;cursor:pointer;margin-top:2px;flex-shrink:0;">
-          <div>
-            <div style="font-size:14px;font-weight:600;color:var(--text);">Médias por Critério</div>
-            <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Média de Pontualidade, Comunicação, Técnico, Proatividade e Equipe por pessoa</div>
-          </div>
-        </label>
+      <label class="export-card" data-value="usuarios">
+        <input type="radio" name="export-type" value="usuarios" hidden>
+        <div class="export-card-icon" style="background:linear-gradient(135deg,#d1fae5,#a7f3d0);color:#059669">
+          <i class="fa-solid fa-users"></i>
+        </div>
+        <div class="export-card-body">
+          <div class="export-card-title">Cadastro de Colaboradores</div>
+          <div class="export-card-desc">Lista de gestores e colaboradores com cargo, departamento e data de cadastro</div>
+        </div>
+        <div class="export-card-check"><i class="fa-solid fa-circle-check"></i></div>
+      </label>
 
-        <label style="display:flex;align-items:flex-start;gap:12px;padding:13px;background:#f8fafc;border:2px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;transition:all 0.2s;" class="export-option">
-          <input type="radio" name="export-type" value="usuarios" style="width:16px;height:16px;cursor:pointer;margin-top:2px;flex-shrink:0;">
-          <div>
-            <div style="font-size:14px;font-weight:600;color:var(--text);">Cadastro de Usuários</div>
-            <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Lista de todos os usuários com cargo, departamento, RA e tipo</div>
-          </div>
-        </label>
-
-      </div>
     </div>
 
-    <!-- Indicador de carregamento -->
-    <div id="export-loading" style="display:none;text-align:center;padding:8px 0;font-size:13px;color:var(--text-muted);">
-      <i class="fa-solid fa-spinner fa-spin"></i> Buscando dados...
+    <!-- Loading -->
+    <div id="export-loading" class="export-loading-bar" style="display:none;">
+      <i class="fa-solid fa-spinner fa-spin"></i>
+      <span>Buscando dados, aguarde...</span>
     </div>
 
-    <div style="display:flex;gap:10px;">
-      <button onclick="fecharModalExportar()" style="flex:1;padding:12px;background:transparent;color:var(--text-muted);border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s;font-family:inherit;">
-        <i class="fa-solid fa-times"></i> Cancelar
+    <!-- Footer buttons -->
+    <div class="export-modal-footer">
+      <button class="export-btn-cancel" onclick="fecharModalExportar()">
+        <i class="fa-solid fa-xmark"></i> Cancelar
       </button>
-      <button onclick="confirmarExportacao()" id="btn-confirmar-export" style="flex:1;padding:12px;background:var(--primary);color:white;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s;font-family:inherit;">
+      <button class="export-btn-confirm" id="btn-confirmar-export" onclick="confirmarExportacao()">
         <i class="fa-solid fa-download"></i> Exportar CSV
       </button>
     </div>
@@ -935,16 +999,274 @@
 </div>
 
 <style>
-  .export-option:has(input:checked) {
-    background: #eff6ff !important;
-    border-color: var(--primary) !important;
+  /* ── Export Modal ─────────────────────────────────────── */
+  .export-modal-box {
+    background: var(--surface);
+    border-radius: 20px;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.22), 0 4px 16px rgba(0,0,0,0.1);
+    width: 100%;
+    max-width: 540px;
+    animation: exportModalIn 0.25s cubic-bezier(0.34,1.56,0.64,1);
+    border: 1.5px solid var(--border);
+    overflow: hidden;
   }
+  @keyframes exportModalIn {
+    from { opacity: 0; transform: translateY(24px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0)    scale(1); }
+  }
+
+  /* Header */
+  .export-modal-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 22px 24px 18px;
+    border-bottom: 1.5px solid var(--border);
+    background: linear-gradient(135deg, #f8faff 0%, #f1f5ff 100%);
+  }
+  .export-modal-header-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--primary), #2563eb);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 18px;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(30,58,138,0.3);
+  }
+  .export-modal-header-text { flex: 1; min-width: 0; }
+  .export-modal-header-text h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--primary);
+    margin: 0 0 2px 0;
+  }
+  .export-modal-header-text p {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin: 0;
+  }
+  .export-modal-close {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: transparent;
+    border: 1.5px solid var(--border);
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.18s;
+    flex-shrink: 0;
+  }
+  .export-modal-close:hover {
+    background: #fee2e2;
+    border-color: #fca5a5;
+    color: #dc2626;
+    transform: none;
+  }
+
+  /* Options */
+  .export-options-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 20px 24px 16px;
+  }
+  .export-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.18s;
+    background: var(--surface);
+    position: relative;
+    overflow: hidden;
+  }
+  .export-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%);
+    opacity: 0;
+    transition: opacity 0.18s;
+  }
+  .export-card:hover {
+    border-color: #93c5fd;
+    box-shadow: 0 2px 12px rgba(30,58,138,0.1);
+    transform: translateX(3px);
+  }
+  .export-card:has(input:checked) {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+  }
+  .export-card:has(input:checked)::before { opacity: 1; }
+  .export-card > * { position: relative; z-index: 1; }
+
+  .export-card-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  .export-card-body { flex: 1; min-width: 0; }
+  .export-card-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 3px;
+    transition: color 0.18s;
+  }
+  .export-card:has(input:checked) .export-card-title { color: var(--primary); }
+  .export-card-desc {
+    font-size: 11.5px;
+    color: var(--text-muted);
+    line-height: 1.45;
+  }
+  .export-card-check {
+    font-size: 20px;
+    color: #cbd5e1;
+    flex-shrink: 0;
+    transition: all 0.18s;
+  }
+  .export-card:has(input:checked) .export-card-check {
+    color: var(--primary);
+    transform: scale(1.1);
+  }
+
+  /* Loading */
+  .export-loading-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 24px;
+    font-size: 13px;
+    color: var(--primary);
+    background: #eff6ff;
+    border-top: 1.5px solid #dbeafe;
+  }
+
+  /* Footer */
+  .export-modal-footer {
+    display: flex;
+    gap: 10px;
+    padding: 16px 24px 20px;
+    border-top: 1.5px solid var(--border);
+  }
+  .export-btn-cancel {
+    flex: 1;
+    padding: 11px 18px;
+    background: transparent;
+    color: var(--text-muted);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.18s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .export-btn-cancel:hover {
+    background: #f8fafc;
+    border-color: #94a3b8;
+    color: var(--text);
+    transform: none;
+  }
+  .export-btn-confirm {
+    flex: 2;
+    padding: 11px 18px;
+    background: linear-gradient(135deg, var(--primary), #2563eb);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.18s;
+    box-shadow: 0 4px 14px rgba(30,58,138,0.3);
+    letter-spacing: 0.02em;
+  }
+  .export-btn-confirm:hover {
+    background: linear-gradient(135deg, #1d4ed8, #1e40af);
+    box-shadow: 0 6px 20px rgba(30,58,138,0.4);
+    transform: translateY(-1px);
+  }
+  .export-btn-confirm:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  /* Dark mode */
+  body.dark-mode .export-modal-box {
+    background: #1e293b;
+    border-color: #334155;
+  }
+  body.dark-mode .export-modal-header {
+    background: linear-gradient(135deg, #1e293b, #1e3a5f);
+    border-color: #334155;
+  }
+  body.dark-mode .export-modal-footer {
+    border-color: #334155;
+  }
+  body.dark-mode .export-card {
+    background: #1e293b;
+    border-color: #334155;
+  }
+  body.dark-mode .export-card::before {
+    background: linear-gradient(135deg, #1e3a5f, #172554);
+  }
+  body.dark-mode .export-card:hover {
+    border-color: #3b82f6;
+  }
+  body.dark-mode .export-card-title { color: #f1f5f9; }
+  body.dark-mode .export-card:has(input:checked) .export-card-title { color: #93c5fd; }
+  body.dark-mode .export-loading-bar {
+    background: #172554;
+    border-color: #1e3a5f;
+    color: #93c5fd;
+  }
+  body.dark-mode .export-modal-close:hover {
+    background: #7f1d1d;
+    border-color: #991b1b;
+    color: #fca5a5;
+  }
+  body.dark-mode .export-btn-cancel {
+    border-color: #475569;
+    color: #94a3b8;
+  }
+  body.dark-mode .export-btn-cancel:hover {
+    background: #334155;
+    border-color: #64748b;
+    color: #f1f5f9;
+  }
+
   .modal-overlay.open {
     display: flex !important;
-  }
-  @keyframes slideUp {
-    from { opacity: 0; transform: translateY(30px); }
-    to { opacity: 1; transform: translateY(0); }
   }
 </style>
 
@@ -1020,51 +1342,53 @@
       document.getElementById('s-avaliacoes').textContent    = d.totalAvaliacoes ?? '—';
       document.getElementById('s-media').textContent         = d.mediaGeral ? d.mediaGeral.toFixed(1) + ' ★' : '—';
       
-      // Carregar dados do Nine Box
-      const nbRes = await nineBoxApi.list({ limit: 1000 });
-      allNineBoxData = nbRes.data.nineBoxes || [];
+      // Carregar Nine Box — usa calculateAll (mesmo endpoint do nine-box.html)
+      // para garantir dados consistentes calculados das avaliações reais
+      const nbRes = await nineBoxApi.calculateAll();
+      allNineBoxData = nbRes.data.team || [];
       document.getElementById('s-ninebox').textContent = allNineBoxData.length;
 
       // Distribuição Nine Box
       const CATEGORIAS = {
-        '1-1': { nome: 'Q1 (Insuficiente)', icon: '<i class="fa-solid fa-circle-question"></i>', slug: 'q1', desc: 'Baixo desempenho e potencial' },
-        '2-1': { nome: 'Q2 (Questionável)', icon: '<i class="fa-solid fa-question"></i>', slug: 'q2', desc: 'Desempenho médio, baixo potencial' },
-        '3-1': { nome: 'Q3 (Eficaz)', icon: '<i class="fa-solid fa-gears"></i>', slug: 'q3', desc: 'Alto desempenho, baixo potencial' },
-        '1-2': { nome: 'Q4 (Dilema)', icon: '<i class="fa-solid fa-wand-magic-sparkles"></i>', slug: 'q4', desc: 'Baixo desempenho, potencial médio' },
-        '2-2': { nome: 'Q5 (Mantenedor)', icon: '<i class="fa-solid fa-gem"></i>', slug: 'q5', desc: 'Desempenho e potencial médios' },
-        '3-2': { nome: 'Q6 (Especialista)', icon: '<i class="fa-solid fa-bullseye"></i>', slug: 'q6', desc: 'Alto desempenho, potencial médio' },
-        '1-3': { nome: 'Q7 (Forte Candidato)', icon: '<i class="fa-solid fa-star"></i>', slug: 'q7', desc: 'Baixo desempenho, alto potencial' },
-        '2-3': { nome: 'Q8 (Alto Desempenho)', icon: '<i class="fa-solid fa-chart-line"></i>', slug: 'q8', desc: 'Desempenho médio, alto potencial' },
-        '3-3': { nome: 'Q9 (Estrela)', icon: '<i class="fa-solid fa-rocket"></i>', slug: 'q9', desc: 'Alto desempenho e potencial' },
+        '1-1': { nome: 'Q1 (Insuficiente)',  icon: '<i class="fa-solid fa-circle-question"></i>', slug: 'q1', desc: 'Baixo desempenho e potencial' },
+        '2-1': { nome: 'Q2 (Questionável)',  icon: '<i class="fa-solid fa-gears"></i>',           slug: 'q2', desc: 'Desempenho médio, baixo potencial' },
+        '3-1': { nome: 'Q3 (Especialista)', icon: '<i class="fa-solid fa-bullseye"></i>',          slug: 'q3', desc: 'Alto desempenho, baixo potencial' },
+        '1-2': { nome: 'Q4 (Inconsistente)', icon: '<i class="fa-solid fa-question"></i>',        slug: 'q4', desc: 'Baixo desempenho, potencial médio' },
+        '2-2': { nome: 'Q5 (Profissional)',  icon: '<i class="fa-solid fa-gem"></i>',              slug: 'q5', desc: 'Desempenho e potencial médios' },
+        '3-2': { nome: 'Q6 (Destaque)',      icon: '<i class="fa-solid fa-chart-line"></i>',       slug: 'q6', desc: 'Alto desempenho, potencial médio' },
+        '1-3': { nome: 'Q7 (Enigma)',        icon: '<i class="fa-solid fa-wand-magic-sparkles"></i>', slug: 'q7', desc: 'Baixo desempenho, alto potencial' },
+        '2-3': { nome: 'Q8 (Alto Potencial)', icon: '<i class="fa-solid fa-star"></i>',           slug: 'q8', desc: 'Desempenho médio, alto potencial' },
+        '3-3': { nome: 'Q9 (Estrela)',       icon: '<i class="fa-solid fa-rocket"></i>',           slug: 'q9', desc: 'Alto desempenho e potencial' },
       };
       
       const legendList = document.getElementById('nb-legend-list');
-      const grid = document.getElementById('nb-dist-grid');
       let legendHtml = '';
-      let gridHtml = '';
-      
-      // Ordem: pot 3→1 (top to bottom), perf 1→3 (left to right)
+
+      // Resolve posição 1-3 — usa gridX/gridY do backend, com fallback para score float
+      const resolvePos = (nb) => {
+        let perf = nb.gridX ?? null;
+        let pot  = nb.gridY ?? null;
+        if (perf === null && nb.performance !== null) {
+          const s = nb.performance;
+          perf = s < 2.01 ? 1 : s < 3.01 ? 2 : 3;
+        }
+        if (pot === null && nb.potential !== null) {
+          const s = nb.potential;
+          pot = s < 2.01 ? 1 : s < 3.01 ? 2 : 3;
+        }
+        return { perf, pot };
+      };
+
+      // Ordem: pot 3→1, perf 1→3 (mesmo layout do nine-box.html)
       for (let pot = 3; pot >= 1; pot--) {
         for (let perf = 1; perf <= 3; perf++) {
-          const key = `${perf}-${pot}`;
-          const cat = CATEGORIAS[key];
-          const count = allNineBoxData.filter(nb => nb.performance === perf && nb.potential === pot).length;
-          const isEmpty = count === 0;
-          
-          // Adicionar ao grid
-          gridHtml += `
-            <div class="nb-dist-cell ${isEmpty ? 'empty' : ''}" 
-                 data-category="${cat?.slug || ''}"
-                 data-perf="${perf}"
-                 data-pot="${pot}"
-                 onclick="mostrarUsuariosCategoria(${perf}, ${pot})"
-                 title="${cat?.desc || ''}">
-              <div class="nb-dist-icon">${cat?.icon || ''}</div>
-              <div class="nb-dist-count">${count}</div>
-              <div class="nb-dist-label">${cat?.nome || ''}</div>
-            </div>`;
-          
-          // Adicionar à legenda (todos clicáveis)
+          const key   = `${perf}-${pot}`;
+          const cat   = CATEGORIAS[key];
+          const count = allNineBoxData.filter(nb => {
+            const pos = resolvePos(nb);
+            return pos.perf === perf && pos.pot === pot;
+          }).length;
+
           legendHtml += `
             <div class="nb-legend-item" data-perf="${perf}" data-pot="${pot}" onclick="mostrarUsuariosCategoria(${perf}, ${pot})">
               <div class="nb-legend-icon">${cat?.icon || ''}</div>
@@ -1073,121 +1397,119 @@
             </div>`;
         }
       }
-      grid.innerHTML = gridHtml;
       legendList.innerHTML = legendHtml;
-      
-      // Pré-selecionar a primeira categoria que tem usuários
-      let primeiraCategoriaComUsuarios = null;
+
+      // Pré-seleciona a categoria com mais colaboradores
+      let melhorCategoria = null;
+      let melhorCount = 0;
       for (let pot = 3; pot >= 1; pot--) {
         for (let perf = 1; perf <= 3; perf++) {
-          const count = allNineBoxData.filter(nb => nb.performance === perf && nb.potential === pot).length;
-          if (count > 0 && !primeiraCategoriaComUsuarios) {
-            primeiraCategoriaComUsuarios = { perf, pot };
-            break;
-          }
+          const count = allNineBoxData.filter(nb => {
+            const pos = resolvePos(nb);
+            return pos.perf === perf && pos.pot === pot;
+          }).length;
+          if (count > melhorCount) { melhorCount = count; melhorCategoria = { perf, pot }; }
         }
-        if (primeiraCategoriaComUsuarios) break;
       }
-      
-      // Se encontrou categoria com usuários, mostrar automaticamente
-      if (primeiraCategoriaComUsuarios) {
-        mostrarUsuariosCategoria(primeiraCategoriaComUsuarios.perf, primeiraCategoriaComUsuarios.pot);
-      }
+      if (melhorCategoria) mostrarUsuariosCategoria(melhorCategoria.perf, melhorCategoria.pot);
     } catch (err) {
       console.error('Erro ao carregar dashboard:', err);
       document.getElementById('dash-stats').innerHTML = `<div class="empty-state" style="grid-column:1/-1"><i class="fa-solid fa-triangle-exclamation"></i><p>Erro ao carregar dashboard.</p></div>`;
     }
   }
 
-  // ---- MOSTRAR USUÁRIOS DA CATEGORIA (inline) ----
+  // ---- MOSTRAR USUÁRIOS DA CATEGORIA ----
   window.mostrarUsuariosCategoria = function(performance, potential) {
     const CATEGORIAS = {
-      '1-1': { nome: 'Q1 (Insuficiente)', icon: '<i class="fa-solid fa-circle-question"></i>', color: '#b91c1c' },
-      '2-1': { nome: 'Q2 (Questionável)', icon: '<i class="fa-solid fa-question"></i>', color: '#b45309' },
-      '3-1': { nome: 'Q3 (Eficaz)', icon: '<i class="fa-solid fa-gears"></i>', color: '#a16207' },
-      '1-2': { nome: 'Q4 (Dilema)', icon: '<i class="fa-solid fa-wand-magic-sparkles"></i>', color: '#c2410c' },
-      '2-2': { nome: 'Q5 (Mantenedor)', icon: '<i class="fa-solid fa-gem"></i>', color: '#047857' },
-      '3-2': { nome: 'Q6 (Especialista)', icon: '<i class="fa-solid fa-bullseye"></i>', color: '#065f46' },
-      '1-3': { nome: 'Q7 (Forte Candidato)', icon: '<i class="fa-solid fa-star"></i>', color: '#7e22ce' },
-      '2-3': { nome: 'Q8 (Alto Desempenho)', icon: '<i class="fa-solid fa-chart-line"></i>', color: '#1d4ed8' },
-      '3-3': { nome: 'Q9 (Estrela)', icon: '<i class="fa-solid fa-rocket"></i>', color: '#059669' },
+      '1-1': { nome: 'Q1 (Insuficiente)',   icon: '<i class="fa-solid fa-circle-question"></i>',    color: '#b91c1c' },
+      '2-1': { nome: 'Q2 (Questionável)',   icon: '<i class="fa-solid fa-gears"></i>',               color: '#b45309' },
+      '3-1': { nome: 'Q3 (Especialista)',   icon: '<i class="fa-solid fa-bullseye"></i>',             color: '#a16207' },
+      '1-2': { nome: 'Q4 (Inconsistente)',  icon: '<i class="fa-solid fa-question"></i>',             color: '#c2410c' },
+      '2-2': { nome: 'Q5 (Profissional)',   icon: '<i class="fa-solid fa-gem"></i>',                 color: '#047857' },
+      '3-2': { nome: 'Q6 (Destaque)',       icon: '<i class="fa-solid fa-chart-line"></i>',           color: '#065f46' },
+      '1-3': { nome: 'Q7 (Enigma)',         icon: '<i class="fa-solid fa-wand-magic-sparkles"></i>',  color: '#7e22ce' },
+      '2-3': { nome: 'Q8 (Alto Potencial)', icon: '<i class="fa-solid fa-star"></i>',                color: '#1d4ed8' },
+      '3-3': { nome: 'Q9 (Estrela)',        icon: '<i class="fa-solid fa-rocket"></i>',               color: '#059669' },
     };
-    
+    const NIVEL = { 1: 'Baixo', 2: 'Médio', 3: 'Alto' };
+
     const key = `${performance}-${potential}`;
     const cat = CATEGORIAS[key];
-    
-    // Filtrar usuários nesta categoria
-    const usuariosNaCategoria = allNineBoxData.filter(
-      nb => nb.performance === performance && nb.potential === potential
-    );
-    
-    // Ocultar grid e eixos
-    const gridEl = document.getElementById('nb-dist-grid');
-    const axisBottomEl = document.getElementById('nb-axis-bottom');
-    const axisLabelEl = document.getElementById('nb-axis-label');
-    const axesEl = document.querySelector('.nb-dist-axes');
-    
-    if (gridEl) gridEl.style.display = 'none';
-    if (axisBottomEl) axisBottomEl.style.display = 'none';
-    if (axisLabelEl) axisLabelEl.style.display = 'none';
-    if (axesEl) axesEl.style.display = 'none';
-    
-    // Marcar item da legenda como ativo
-    document.querySelectorAll('.nb-legend-item').forEach(item => {
-      item.classList.remove('active');
-      if (item.dataset.perf == performance && item.dataset.pot == potential) {
-        item.classList.add('active');
+
+    // Resolve posição 1-3 de cada item — usa gridX/gridY do backend (calculateAll),
+    // com fallback para score float → posição inteira (mesmo critério do nine-box.html)
+    const resolvePos = (nb) => {
+      let perf = nb.gridX ?? null;
+      let pot  = nb.gridY ?? null;
+      if (perf === null && nb.performance !== null) {
+        const s = nb.performance;
+        perf = s < 2.01 ? 1 : s < 3.01 ? 2 : 3;
       }
+      if (pot === null && nb.potential !== null) {
+        const s = nb.potential;
+        pot = s < 2.01 ? 1 : s < 3.01 ? 2 : 3;
+      }
+      return { perf, pot };
+    };
+
+    const cols = allNineBoxData.filter(nb => {
+      const { perf, pot } = resolvePos(nb);
+      return perf === performance && pot === potential;
     });
-    
-    // Mostrar lista de usuários
+
+    // Marca item ativo na legenda
+    document.querySelectorAll('.nb-legend-item').forEach(item => {
+      item.classList.toggle('active', item.dataset.perf == performance && item.dataset.pot == potential);
+    });
+
     const usersList = document.getElementById('nb-users-list');
     usersList.classList.add('active');
-    
-    if (usuariosNaCategoria.length === 0) {
+
+    if (cols.length === 0) {
       usersList.innerHTML = `
-        <div class="empty-state">
-          <i class="fa-solid fa-users"></i>
-          <p>Nenhum usuário posicionado em <strong>${cat?.nome || 'esta categoria'}</strong></p>
-          <p style="font-size:12px;color:var(--text-muted);margin-top:8px">
-            Performance: ${performance} | Potencial: ${potential}
-          </p>
+        <div class="empty-state" style="padding:32px 0">
+          <i class="fa-solid fa-users" style="color:var(--text-muted)"></i>
+          <p>Nenhum colaborador em <strong>${cat?.nome || 'esta categoria'}</strong></p>
         </div>`;
-    } else {
-      usersList.innerHTML = `
-        <div style="margin-bottom:12px;padding:12px;background:#eff6ff;border-radius:8px;border:1.5px solid var(--border)">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-            <span style="font-size:24px;color:${cat?.color || '#059669'}">${cat?.icon || '<i class="fa-solid fa-table-cells"></i>'}</span>
-            <div>
-              <div style="font-size:16px;font-weight:700;color:var(--primary)">${cat?.nome || 'Categoria'}</div>
-              <div style="font-size:12px;color:var(--text-muted)">
-                Performance: ${performance} | Potencial: ${potential} | ${usuariosNaCategoria.length} usuário${usuariosNaCategoria.length !== 1 ? 's' : ''}
-              </div>
-            </div>
+      return;
+    }
+
+    usersList.innerHTML = `
+      <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:#f8fafc;border:1.5px solid var(--border);border-radius:10px;margin-bottom:12px">
+        <span style="font-size:22px;color:${cat?.color || '#059669'}">${cat?.icon || ''}</span>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:var(--primary)">${cat?.nome || 'Categoria'}</div>
+          <div style="font-size:11px;color:var(--text-muted)">
+            Performance: <strong>${NIVEL[performance]}</strong> &nbsp;·&nbsp;
+            Potencial: <strong>${NIVEL[potential]}</strong> &nbsp;·&nbsp;
+            ${cols.length} colaborador${cols.length !== 1 ? 'es' : ''}
           </div>
         </div>
-        ${usuariosNaCategoria.map(nb => {
-          const pessoa = nb.pessoa || {};
-          const iniciais = pessoa.nome ? pessoa.nome.split(' ').slice(0,2).map(p => p[0]).join('').toUpperCase() : '?';
-          const avatarHTML = pessoa.foto 
-            ? `<img src="${pessoa.foto}" alt="${pessoa.nome}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">` 
-            : iniciais;
-          
-          return `
-            <div class="nb-user-card-inline">
-              <div class="nb-user-card-avatar">${avatarHTML}</div>
-              <div class="nb-user-card-info">
-                <div class="nb-user-card-nome">${pessoa.nome || 'Usuário'}</div>
-                <div class="nb-user-card-meta">
-                  ${pessoa.tipo ? `<span class="nb-user-card-badge">${pessoa.tipo}</span>` : ''}
-                  ${pessoa.cargo ? `<span>${pessoa.cargo}</span>` : ''}
-                  <span><i class="fa-solid fa-calendar"></i> ${new Date(nb.data).toLocaleDateString('pt-BR')}</span>
-                </div>
-                ${nb.comentario ? `<div class="nb-user-card-comment">"${nb.comentario}"</div>` : ''}
+      </div>
+      ${cols.map(nb => {
+        const p        = nb.pessoa || {};
+        const iniciais = p.nome ? p.nome.split(' ').slice(0,2).map(n => n[0]).join('').toUpperCase() : '?';
+        const avatarHTML = p.foto
+          ? `<img src="${p.foto}" alt="${p.nome}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`
+          : iniciais;
+        const perfScore = nb.performance != null ? Number(nb.performance).toFixed(1) : '—';
+        const potScore  = nb.potential  != null ? Number(nb.potential).toFixed(1)  : '—';
+        return `
+          <div class="nb-user-card-inline">
+            <div class="nb-user-card-avatar">${avatarHTML}</div>
+            <div class="nb-user-card-info">
+              <div class="nb-user-card-nome">${p.nome || 'Usuário'}</div>
+              <div class="nb-user-card-meta">
+                ${p.cargo        ? `<span>${p.cargo}</span>`                                                       : ''}
+                ${p.departamento ? `<span><i class="fa-solid fa-building" style="font-size:9px"></i> ${p.departamento}</span>` : ''}
+                <span style="color:var(--text-muted);font-size:10px">
+                  Desemp. ${perfScore} · Pot. ${potScore}
+                </span>
               </div>
-            </div>`;
-        }).join('')}`;
-    }
+              ${nb.comentario ? `<div class="nb-user-card-comment">"${nb.comentario}"</div>` : ''}
+            </div>
+          </div>`;
+      }).join('')}`;
   };
 
   window.fecharModalNB = function() {
@@ -1284,124 +1606,166 @@
       container.innerHTML = '<div class="empty-state"><i class="fa-solid fa-triangle-exclamation"></i><p>Erro ao carregar dados do usuário.</p></div>';
       return;
     }
-    
+
     const iniciais = u.nome.split(' ').slice(0,2).map(p => p[0]).join('').toUpperCase();
-    const avatar = u.foto ? `<img src="${u.foto}" alt="${u.nome}">` : iniciais;
+    const avatar   = u.foto ? `<img src="${u.foto}" alt="${u.nome}">` : iniciais;
 
     const TIPO_LABELS = {
-      gestor_para_colaborador: 'Gestor → Colaborador (180°)',
-      colaborador_para_gestor: 'Colaborador → Gestor (360°)',
+      gestor_para_colaborador: 'Gestor → Colaborador',
+      colaborador_para_gestor: 'Colaborador → Gestor',
       avaliacao_360: '360°',
     };
+    const TIPO_COLOR = { gestor: 'Gestor', colaborador: 'Colaborador', admin: 'Admin' };
 
-    const avaliacoes = data.ultimasAvaliacoes || [];
+    const avaliacoes          = data.ultimasAvaliacoes || [];
     const avaliacoesRecebidas = data.avaliacoesRecebidas || 0;
-    const avaliacoesFeitas = data.avaliacoesFeitas || 0;
-    const mediaGeral = data.mediaGeral || 0;
+    const avaliacoesFeitas    = data.avaliacoesFeitas    || 0;
+    const mediaGeral          = data.mediaGeral          || 0;
 
+    // Critérios com barra de progresso (escala 0–10)
+    const criteriosMedia = data.criteriosMedia || {};
+    const criteriosHtml  = Object.keys(criteriosMedia).length > 0 ? `
+      <div style="margin-bottom:24px">
+        <div class="rel-section-title"><i class="fa-solid fa-sliders"></i> Média por Critério</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px">
+          ${Object.entries(criteriosMedia).map(([key, val]) => {
+            const label = key.charAt(0).toUpperCase() + key.slice(1)
+              .replace('comunicacao','Comunicação')
+              .replace('proatividade','Proatividade')
+              .replace('pontualidade','Pontualidade')
+              .replace('tecnico','Técnico')
+              .replace('equipe','Equipe');
+            const pct = Math.min(100, Math.round((val / 10) * 100));
+            return `
+              <div class="rel-criterio-card">
+                <div class="rel-criterio-label">${label}</div>
+                <div class="rel-criterio-val">${val.toFixed(1)}</div>
+                <div class="rel-criterio-bar">
+                  <div class="rel-criterio-bar-fill" style="width:${pct}%"></div>
+                </div>
+              </div>`;
+          }).join('')}
+        </div>
+      </div>` : '';
+
+    // Avaliações
     const avaliacoesHtml = avaliacoes.length
       ? avaliacoes.map(a => `
-          <div class="rel-av-item">
-            <div class="rel-av-header">
-              <span class="rel-av-tipo ${a.tipoAvaliacao}">${TIPO_LABELS[a.tipoAvaliacao] || a.tipoAvaliacao}</span>
-              <div style="display:flex;gap:8px;align-items:center">
-                ${a.media ? `<span class="rel-av-media">${a.media} ★</span>` : ''}
-                <span class="rel-av-data">${new Date(a.data).toLocaleDateString('pt-BR')}</span>
-              </div>
+        <div class="rel-av-item">
+          <div class="rel-av-header">
+            <span class="rel-av-tipo ${a.tipoAvaliacao}">${TIPO_LABELS[a.tipoAvaliacao] || a.tipoAvaliacao || 'Avaliação'}</span>
+            <div style="display:flex;gap:10px;align-items:center">
+              ${a.media ? `<span class="rel-av-media">${Number(a.media).toFixed(1)} <i class="fa-solid fa-star" style="font-size:11px;color:#f59e0b"></i></span>` : ''}
+              <span class="rel-av-data"><i class="fa-solid fa-calendar-days" style="font-size:10px"></i> ${new Date(a.data).toLocaleDateString('pt-BR')}</span>
             </div>
-            ${a.comentario ? `<p class="rel-av-comentario">"${a.comentario}"</p>` : ''}
-          </div>`).join('')
-      : '<div class="empty-state" style="padding:20px"><i class="fa-solid fa-star"></i><p>Nenhuma avaliação recebida.</p></div>';
-
-    // Média por critério
-    const criteriosMedia = data.criteriosMedia || {};
-    const criteriosHtml = Object.keys(criteriosMedia).length > 0
-      ? `
-        <div style="margin-top:16px">
-          <div class="rel-section-title"><i class="fa-solid fa-chart-bar"></i> Média por Critério</div>
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px">
-            ${Object.entries(criteriosMedia).map(([key, val]) => {
-              const labels = {
-                pontualidade: 'Pontualidade',
-                comunicacao: 'Comunicação',
-                tecnico: 'Técnico',
-                proatividade: 'Proatividade',
-                equipe: 'Equipe'
-              };
-              return `
-                <div style="background:#f8fafc;border:1.5px solid var(--border);border-radius:8px;padding:10px;text-align:center">
-                  <div style="font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:4px">${labels[key] || key}</div>
-                  <div style="font-size:18px;font-weight:700;color:var(--primary)">${val.toFixed(1)} ★</div>
-                </div>`;
-            }).join('')}
           </div>
-        </div>`
-      : '';
+          ${a.comentario ? `<p class="rel-av-comentario">"${a.comentario}"</p>` : ''}
+        </div>`).join('')
+      : '<div class="empty-state" style="padding:20px"><i class="fa-solid fa-star"></i><p>Nenhuma avaliação recebida ainda.</p></div>';
 
     container.innerHTML = `
       <div class="rel-user-card">
-        <div class="rel-user-header">
+
+        <!-- Header colorido -->
+        <div class="rel-user-card-header">
           <div class="rel-user-avatar">${avatar}</div>
-          <div style="flex:1">
+          <div style="flex:1;min-width:0">
             <div class="rel-user-nome">${u.nome}</div>
             <div class="rel-user-meta">
-              ${u.tipo} · RA: ${u.ra}
-              ${u.cargo ? ` · ${u.cargo}` : ''}
-              ${u.departamento ? ` · ${u.departamento}` : ''}
+              ${TIPO_COLOR[u.tipo] || u.tipo} · RA ${u.ra}${u.cargo ? ' · ' + u.cargo : ''}${u.departamento ? ' · ' + u.departamento : ''}
             </div>
           </div>
           ${!isMeu ? `
-            <button class="btn-exportar" onclick="exportarRelatorio('${u.id}')">
-              <i class="fa-solid fa-download"></i> Exportar
-            </button>` : ''}
+          <button class="nb-export-btn nb-export-btn--secondary" onclick="exportarRelatorio('${u.id}')" style="background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.5);color:white">
+            <i class="fa-solid fa-download"></i> Exportar
+          </button>` : ''}
         </div>
 
-        <!-- Stats rápidas -->
-        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px">
-          <div class="rel-stat-card" style="flex:1;min-width:120px">
-            <div class="rel-stat-icon"><i class="fa-solid fa-star"></i></div>
-            <div>
-              <div class="rel-stat-val">${avaliacoesRecebidas}</div>
-              <div class="rel-stat-label">Avaliações recebidas</div>
-            </div>
-          </div>
-          <div class="rel-stat-card" style="flex:1;min-width:120px">
-            <div class="rel-stat-icon"><i class="fa-solid fa-chart-line"></i></div>
-            <div>
-              <div class="rel-stat-val">${mediaGeral > 0 ? mediaGeral.toFixed(1) + ' ★' : '—'}</div>
-              <div class="rel-stat-label">Média geral</div>
-            </div>
-          </div>
-          <div class="rel-stat-card" style="flex:1;min-width:120px">
-            <div class="rel-stat-icon"><i class="fa-solid fa-paper-plane"></i></div>
-            <div>
-              <div class="rel-stat-val">${avaliacoesFeitas}</div>
-              <div class="rel-stat-label">Avaliações feitas</div>
-            </div>
-          </div>
-        </div>
+        <!-- Corpo -->
+        <div class="rel-user-card-body">
 
-        ${criteriosHtml}
+          <!-- Stats rápidas -->
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px">
+            <div style="background:#f8fafc;border:1.5px solid var(--border);border-radius:10px;padding:14px;text-align:center">
+              <div style="font-size:22px;font-weight:800;color:var(--primary);line-height:1">${avaliacoesRecebidas}</div>
+              <div style="font-size:11px;color:var(--text-muted);font-weight:600;margin-top:5px;text-transform:uppercase;letter-spacing:0.04em">Recebidas</div>
+            </div>
+            <div style="background:linear-gradient(135deg,#eff6ff,#dbeafe);border:1.5px solid #bfdbfe;border-radius:10px;padding:14px;text-align:center">
+              <div style="font-size:22px;font-weight:800;color:var(--primary);line-height:1">${mediaGeral > 0 ? mediaGeral.toFixed(1) : '—'}</div>
+              <div style="font-size:11px;color:var(--text-muted);font-weight:600;margin-top:5px;text-transform:uppercase;letter-spacing:0.04em">Média Geral</div>
+            </div>
+            <div style="background:#f8fafc;border:1.5px solid var(--border);border-radius:10px;padding:14px;text-align:center">
+              <div style="font-size:22px;font-weight:800;color:var(--primary);line-height:1">${avaliacoesFeitas}</div>
+              <div style="font-size:11px;color:var(--text-muted);font-weight:600;margin-top:5px;text-transform:uppercase;letter-spacing:0.04em">Feitas</div>
+            </div>
+          </div>
 
-        <!-- Avaliações recebidas -->
-        <div style="margin-top:20px">
-          <div class="rel-section-title"><i class="fa-solid fa-star"></i> Últimas Avaliações Recebidas</div>
-          ${avaliacoesHtml}
+          ${criteriosHtml}
+
+          <!-- Últimas avaliações -->
+          <div>
+            <div class="rel-section-title"><i class="fa-solid fa-star"></i> Últimas Avaliações Recebidas</div>
+            ${avaliacoesHtml}
+          </div>
+
         </div>
       </div>`;
   }
 
   window.exportarRelatorio = async function(userId) {
     try {
-      const res = await reportsApi.export(userId);
-      const blob = new Blob([JSON.stringify(res.data, null, 2)], { type: 'application/json' });
-      const url  = URL.createObjectURL(blob);
-      const a    = document.createElement('a');
-      a.href     = url;
-      a.download = `relatorio-${userId}-${Date.now()}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-      showToast('Relatório exportado!', 'success');
+      const [userRes, reportRes, nbRes] = await Promise.allSettled([
+        usersApi.getById(userId),
+        reportsApi.user(userId),
+        nineBoxApi.list({ limit: 1000 })
+      ]);
+
+      const u  = userRes.status   === 'fulfilled' ? userRes.value.data   : {};
+      const d  = reportRes.status === 'fulfilled' ? reportRes.value.data  : {};
+      const nineBoxes = nbRes.status === 'fulfilled' ? (nbRes.value.data.nineBoxes || []) : [];
+      const nb = nineBoxes.find(n => n.pessoaId === userId || n.pessoa?.id === userId);
+
+      const CATEGORIAS = {
+        '1-1': 'Insuficiente',   '2-1': 'Questionável', '3-1': 'Especialista',
+        '1-2': 'Inconsistente',  '2-2': 'Profissional', '3-2': 'Destaque',
+        '1-3': 'Enigma',         '2-3': 'Alto Potencial', '3-3': 'Estrela'
+      };
+      const NIVEL = { 1: 'Baixo', 2: 'Médio', 3: 'Alto' };
+      const fmt   = v => (v != null) ? Number(v).toFixed(1) : '—';
+
+      const headers = ['Campo', 'Valor'];
+      const rows = [
+        ['Nome',                 u.nome         || ''],
+        ['RA',                   u.ra           || ''],
+        ['E-mail',               u.email        || ''],
+        ['Cargo',                u.cargo        || ''],
+        ['Departamento',         u.departamento || ''],
+        ['Perfil',               { gestor: 'Gestor', colaborador: 'Colaborador', admin: 'Admin' }[u.tipo] || ''],
+        ['', ''],
+        ['Avaliações recebidas', d.avaliacoesRecebidas ?? '—'],
+        ['Avaliações feitas',    d.avaliacoesFeitas    ?? '—'],
+        ['Média geral',          fmt(d.mediaGeral)],
+        ['', ''],
+      ];
+
+      // Critérios dinâmicos — exporta o que existir no relatório
+      if (d.criteriosMedia && typeof d.criteriosMedia === 'object') {
+        Object.entries(d.criteriosMedia).forEach(([chave, valor]) => {
+          rows.push([chave.charAt(0).toUpperCase() + chave.slice(1), fmt(valor)]);
+        });
+        rows.push(['', '']);
+      }
+
+      // Nine Box (se existir)
+      if (nb) {
+        rows.push(['Performance (Nine Box)', NIVEL[nb.performance] || nb.performance]);
+        rows.push(['Potencial (Nine Box)',   NIVEL[nb.potential]   || nb.potential]);
+        rows.push(['Categoria Nine Box',     CATEGORIAS[`${nb.performance}-${nb.potential}`] || '']);
+        if (nb.comentario) rows.push(['Observação', nb.comentario]);
+      }
+
+      const nomeArquivo = `relatorio_${(u.nome || userId).replace(/\s+/g, '_').toLowerCase()}`;
+      exportarCSV(headers, rows, nomeArquivo);
     } catch (err) {
       console.error('Erro ao exportar relatório:', err);
       showToast('Erro ao exportar relatório. Tente novamente.', 'error');
@@ -1429,9 +1793,8 @@
     try {
       switch (tipoSelecionado) {
         case 'ranking':    await exportarRankingColaboradores(); break;
-        case 'ninebox':    exportarNineBoxCSV();                 break;
-        case 'avaliacoes': await exportarAvaliacoesDetalhadas(); break;
         case 'medias':     await exportarMediasPorCriterio();    break;
+        case 'avaliacoes': await exportarAvaliacoesDetalhadas(); break;
         case 'usuarios':   await exportarCadastroUsuarios();     break;
       }
       fecharModalExportar();
@@ -1446,22 +1809,23 @@
   };
 
   // ---- FUNÇÃO AUXILIAR PARA EXPORTAR CSV ----
+  // Separador ponto-e-vírgula para compatibilidade com Excel PT-BR
   function exportarCSV(headers, rows, nomeArquivo) {
     if (rows.length === 0) {
       showToast('Nenhum dado encontrado para exportar.', 'warning');
       return false;
     }
     const csvContent = [
-      headers.map(h => `"${h}"`).join(','),
-      ...rows.map(row => row.map(cell => `"${String(cell ?? '').replace(/"/g, '""')}"`).join(','))
+      headers.map(h => `"${h}"`).join(';'),
+      ...rows.map(row => row.map(cell => `"${String(cell ?? '').replace(/"/g, '""')}"`).join(';'))
     ].join('\n');
 
     const BOM = '\uFEFF';
     const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
+    const url  = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.href = url;
-    link.download = `${nomeArquivo}-${new Date().toISOString().split('T')[0]}.csv`;
+    link.href     = url;
+    link.download = `${nomeArquivo}_${new Date().toISOString().split('T')[0]}.csv`;
     link.click();
     URL.revokeObjectURL(url);
     showToast(`${rows.length} registros exportados com sucesso!`, 'success');
@@ -1469,72 +1833,85 @@
   }
 
   // ---- RANKING DE COLABORADORES ----
-  // Busca todos os usuários + relatório individual e ordena por média geral
   async function exportarRankingColaboradores() {
     const [usersRes, nbRes] = await Promise.all([
       usersApi.list({ limit: 1000 }),
-      nineBoxApi.list({ limit: 1000 })
+      nineBoxApi.calculateAll()          // mesma fonte que o nine-box.html
     ]);
 
-    const users     = usersRes.data.users    || [];
-    const nineBoxes = nbRes.data.nineBoxes   || [];
+    const users     = usersRes.data.users || [];
+    const nineBoxes = nbRes.data.team     || [];
 
     const NB_CATEGORIAS = {
-      '1-1': 'Questão',    '2-1': 'Trabalhador', '3-1': 'Âncora',
-      '1-2': 'Dilema',     '2-2': 'Núcleo',      '3-2': 'Especialista',
-      '1-3': 'Enigma',     '2-3': 'Estrela',      '3-3': 'Superstar'
+      '1-1': 'Q1 (Insuficiente)',   '2-1': 'Q2 (Questionável)',  '3-1': 'Q3 (Especialista)',
+      '1-2': 'Q4 (Inconsistente)',  '2-2': 'Q5 (Profissional)',  '3-2': 'Q6 (Destaque)',
+      '1-3': 'Q7 (Enigma)',         '2-3': 'Q8 (Alto Potencial)', '3-3': 'Q9 (Estrela)'
+    };
+    const NIVEL = { 1: 'Baixo', 2: 'Médio', 3: 'Alto' };
+
+    // Resolve posição 1-3 — usa gridX/gridY do backend, com fallback para score
+    const resolvePos = (nb) => {
+      let perf = nb.gridX ?? null;
+      let pot  = nb.gridY ?? null;
+      if (perf === null && nb.performance != null) { const s = nb.performance; perf = s < 2.01 ? 1 : s < 3.01 ? 2 : 3; }
+      if (pot  === null && nb.potential   != null) { const s = nb.potential;   pot  = s < 2.01 ? 1 : s < 3.01 ? 2 : 3; }
+      return { perf, pot };
     };
 
-    // Buscar relatório de cada usuário em lotes de 5
+    // Buscar relatório individual em lotes de 5
     const resultados = [];
-    const batchSize = 5;
+    const batchSize  = 5;
     for (let i = 0; i < users.length; i += batchSize) {
       const batch = users.slice(i, i + batchSize);
-      const batchResults = await Promise.allSettled(
-        batch.map(u => reportsApi.user(u.id))
-      );
+      const batchResults = await Promise.allSettled(batch.map(u => reportsApi.user(u.id)));
       batchResults.forEach((result, idx) => {
         const u  = batch[idx];
-        const nb = nineBoxes.find(n => n.pessoaId === u.id || n.pessoa?.id === u.id);
-        const nbCategoria = nb ? (NB_CATEGORIAS[`${nb.performance}-${nb.potential}`] || '') : '';
-        const d = (result.status === 'fulfilled' && result.value?.data) ? result.value.data : {};
+        const nb = nineBoxes.find(n => n.pessoa?.id === u.id || n.avaliadoId === u.id);
+        const d  = (result.status === 'fulfilled' && result.value?.data) ? result.value.data : {};
+
+        let categoriaBox = '';
+        let perfLabel    = '';
+        let potLabel     = '';
+        if (nb) {
+          const { perf, pot } = resolvePos(nb);
+          categoriaBox = NB_CATEGORIAS[`${perf}-${pot}`] || '';
+          perfLabel    = NIVEL[perf] || '';
+          potLabel     = NIVEL[pot]  || '';
+        }
+
         resultados.push({
-          nome: u.nome, ra: u.ra, tipo: u.tipo,
-          cargo: u.cargo || '', departamento: u.departamento || '',
-          avaliacoesRecebidas: d.avaliacoesRecebidas || 0,
-          avaliacoesFeitas:    d.avaliacoesFeitas    || 0,
-          mediaGeral:          d.mediaGeral          || 0,
-          criterios:           d.criteriosMedia      || {},
-          nbCategoria,
-          nbPerf: nb ? nb.performance : '',
-          nbPot:  nb ? nb.potential   : ''
+          nome:                u.nome,
+          ra:                  u.ra,
+          perfil:              { admin: 'Admin', gestor: 'Gestor', colaborador: 'Colaborador' }[u.tipo] || u.tipo,
+          cargo:               u.cargo        || '',
+          departamento:        u.departamento || '',
+          avaliacoesRecebidas: d.avaliacoesRecebidas ?? 0,
+          mediaGeral:          d.mediaGeral          ?? null,
+          categoriaBox,
+          performance: perfLabel,
+          potencial:   potLabel
         });
       });
     }
 
-    resultados.sort((a, b) => b.mediaGeral - a.mediaGeral);
+    resultados.sort((a, b) => (b.mediaGeral ?? -1) - (a.mediaGeral ?? -1));
+
+    const fmt = v => (v != null) ? Number(v).toFixed(1) : '—';
 
     const headers = [
-      'Posição', 'Nome', 'RA', 'Tipo', 'Cargo', 'Departamento',
-      'Média Geral', 'Avaliações Recebidas', 'Avaliações Feitas',
-      'Pontualidade', 'Comunicação', 'Técnico', 'Proatividade', 'Equipe',
-      'Categoria Nine Box', 'Performance (NB)', 'Potencial (NB)'
+      'Posição', 'Nome', 'RA', 'Perfil', 'Cargo', 'Departamento',
+      'Média Geral', 'Avaliações Recebidas',
+      'Categoria Nine Box', 'Performance', 'Potencial'
     ];
-
-    const fmt = v => (v != null && v > 0) ? Number(v).toFixed(1) : '—';
 
     const rows = resultados.map((r, i) => [
       i + 1,
-      r.nome, r.ra, r.tipo, r.cargo, r.departamento,
-      fmt(r.mediaGeral),
-      r.avaliacoesRecebidas, r.avaliacoesFeitas,
-      fmt(r.criterios.pontualidade), fmt(r.criterios.comunicacao),
-      fmt(r.criterios.tecnico),      fmt(r.criterios.proatividade),
-      fmt(r.criterios.equipe),
-      r.nbCategoria, r.nbPerf, r.nbPot
+      r.nome, r.ra, r.perfil, r.cargo, r.departamento,
+      fmt(r.mediaGeral), r.avaliacoesRecebidas,
+      r.categoriaBox, r.performance, r.potencial
     ]);
 
-    exportarCSV(headers, rows, 'ranking-colaboradores');
+    exportarCSV(headers, rows, 'ranking_colaboradores');
   }
 
   // ---- AVALIAÇÕES DETALHADAS ----
@@ -1543,38 +1920,27 @@
     const res = await evaluationsApi.list({ limit: 1000 });
     const avaliacoes = res.data.evaluations || res.data.avaliacoes || [];
 
-    const TIPO_LABELS = {
-      gestor_para_colaborador: 'Gestor → Colaborador (180°)',
-      colaborador_para_gestor: 'Colaborador → Gestor (360°)',
-      avaliacao_360: '360°'
-    };
-
     const headers = [
-      'ID', 'Avaliado', 'RA Avaliado', 'Tipo Avaliado',
-      'Avaliador', 'Tipo Avaliação',
-      'Pontualidade', 'Comunicação', 'Técnico', 'Proatividade', 'Equipe',
+      'Avaliado', 'RA Avaliado', 'Perfil Avaliado',
+      'Avaliador',
       'Média', 'Comentário', 'Data'
     ];
 
+    const tipoLabels = { admin: 'Admin', gestor: 'Gestor', colaborador: 'Colaborador' };
+    const fmt = v => (v != null && v !== '') ? Number(v).toFixed(1) : '—';
+
     const rows = avaliacoes.map(av => [
-      av.id || '',
       av.avaliado?.nome  || av.avaliadoNome  || '',
       av.avaliado?.ra    || av.avaliadoRA    || '',
-      av.avaliado?.tipo  || '',
+      tipoLabels[av.avaliado?.tipo] || av.avaliado?.tipo || '',
       av.avaliador?.nome || av.avaliadorNome || '',
-      TIPO_LABELS[av.tipoAvaliacao] || av.tipoAvaliacao || '',
-      av.criterios?.pontualidade ?? av.pontualidade ?? '',
-      av.criterios?.comunicacao  ?? av.comunicacao  ?? '',
-      av.criterios?.tecnico      ?? av.tecnico      ?? '',
-      av.criterios?.proatividade ?? av.proatividade ?? '',
-      av.criterios?.equipe       ?? av.equipe       ?? '',
-      av.media ?? '',
+      fmt(av.media),
       av.comentario || '',
-      av.data      ? new Date(av.data).toLocaleDateString('pt-BR')
+      av.data       ? new Date(av.data).toLocaleDateString('pt-BR')
         : av.createdAt ? new Date(av.createdAt).toLocaleDateString('pt-BR') : ''
     ]);
 
-    exportarCSV(headers, rows, 'avaliacoes-detalhadas');
+    exportarCSV(headers, rows, 'avaliacoes_detalhadas');
   }
 
   // ---- MÉDIAS POR CRITÉRIO ----
@@ -1583,113 +1949,143 @@
     const res = await evaluationsApi.list({ limit: 1000 });
     const avaliacoes = res.data.evaluations || res.data.avaliacoes || [];
 
-    const mediasPorPessoa = {};
+    // Agrupa por avaliado e calcula médias de todos os critérios presentes
+    const porPessoa = {};
     avaliacoes.forEach(av => {
-      const id    = av.avaliadoId || av.avaliado?.id;
-      const nome  = av.avaliado?.nome || av.avaliadoNome || 'Desconhecido';
-      const ra    = av.avaliado?.ra   || av.avaliadoRA   || '';
-      const tipo  = av.avaliado?.tipo  || '';
-      const cargo = av.avaliado?.cargo || '';
+      const id   = av.avaliadoId || av.avaliado?.id;
+      const nome = av.avaliado?.nome || av.avaliadoNome || 'Desconhecido';
+      const ra   = av.avaliado?.ra   || av.avaliadoRA   || '';
+      const perfil = { admin: 'Admin', gestor: 'Gestor', colaborador: 'Colaborador' }[av.avaliado?.tipo] || '';
       if (!id) return;
-      if (!mediasPorPessoa[id]) {
-        mediasPorPessoa[id] = { nome, ra, tipo, cargo, pont: [], comun: [], tec: [], proat: [], eq: [], count: 0 };
-      }
-      const c = av.criterios || av;
-      if (c.pontualidade) mediasPorPessoa[id].pont.push(Number(c.pontualidade));
-      if (c.comunicacao)  mediasPorPessoa[id].comun.push(Number(c.comunicacao));
-      if (c.tecnico)      mediasPorPessoa[id].tec.push(Number(c.tecnico));
-      if (c.proatividade) mediasPorPessoa[id].proat.push(Number(c.proatividade));
-      if (c.equipe)       mediasPorPessoa[id].eq.push(Number(c.equipe));
-      mediasPorPessoa[id].count++;
+      if (!porPessoa[id]) porPessoa[id] = { nome, ra, perfil, notas: {}, total: 0 };
+
+      const criterios = av.criterios && typeof av.criterios === 'object' ? av.criterios : {};
+      Object.entries(criterios).forEach(([chave, valor]) => {
+        const v = Number(valor);
+        if (!isNaN(v) && v > 0) {
+          if (!porPessoa[id].notas[chave]) porPessoa[id].notas[chave] = [];
+          porPessoa[id].notas[chave].push(v);
+        }
+      });
+      porPessoa[id].total++;
     });
+
+    // Descobre todos os critérios presentes no dataset
+    const todosCriterios = [...new Set(
+      Object.values(porPessoa).flatMap(p => Object.keys(p.notas))
+    )].sort();
 
     const calcMedia = arr => arr.length > 0 ? arr.reduce((a, b) => a + b, 0) / arr.length : null;
     const fmt = v => v !== null ? Number(v).toFixed(1) : '—';
 
     const headers = [
-      'Nome', 'RA', 'Tipo', 'Cargo',
-      'Pontualidade', 'Comunicação', 'Técnico', 'Proatividade', 'Equipe',
-      'Média Geral', 'Nº Avaliações'
+      'Nome', 'RA', 'Perfil',
+      ...todosCriterios.map(c => c.charAt(0).toUpperCase() + c.slice(1)),
+      'Média Geral', 'Total de Avaliações'
     ];
 
-    const rows = Object.values(mediasPorPessoa)
+    const rows = Object.values(porPessoa)
       .map(p => {
-        const pont  = calcMedia(p.pont);
-        const comun = calcMedia(p.comun);
-        const tec   = calcMedia(p.tec);
-        const proat = calcMedia(p.proat);
-        const eq    = calcMedia(p.eq);
-        const todas = [...p.pont, ...p.comun, ...p.tec, ...p.proat, ...p.eq];
-        const geral = calcMedia(todas);
-        return { ...p, pont, comun, tec, proat, eq, geral };
+        const mediasIndividuais = todosCriterios.map(c => calcMedia(p.notas[c] || []));
+        const todasNotas        = Object.values(p.notas).flat();
+        const mediaGeral        = calcMedia(todasNotas);
+        return { p, mediasIndividuais, mediaGeral };
       })
-      .sort((a, b) => (b.geral ?? -1) - (a.geral ?? -1))
-      .map(p => [
-        p.nome, p.ra, p.tipo, p.cargo,
-        fmt(p.pont), fmt(p.comun), fmt(p.tec), fmt(p.proat), fmt(p.eq),
-        fmt(p.geral), p.count
+      .sort((a, b) => (b.mediaGeral ?? -1) - (a.mediaGeral ?? -1))
+      .map(({ p, mediasIndividuais, mediaGeral }) => [
+        p.nome, p.ra, p.perfil,
+        ...mediasIndividuais.map(fmt),
+        fmt(mediaGeral),
+        p.total
       ]);
 
-    exportarCSV(headers, rows, 'medias-por-criterio');
+    exportarCSV(headers, rows, 'medias_por_criterio');
   }
 
   // ---- CADASTRO DE USUÁRIOS ----
   async function exportarCadastroUsuarios() {
-    const res = await usersApi.list({ limit: 1000 });
-    const users = res.data.users || [];
+    const res   = await usersApi.list({ limit: 1000 });
+    const users = (res.data.users || [])
+      .filter(u => u.tipo !== 'admin')           // admins não fazem sentido no relatório de RH
+      .sort((a, b) => a.nome.localeCompare(b.nome));
 
-    const headers = [
-      'ID', 'Nome', 'RA', 'Email', 'Tipo', 'Cargo', 'Departamento', 'Data de Cadastro'
-    ];
+    const tipoLabels = { gestor: 'Gestor', colaborador: 'Colaborador' };
+
+    const headers = ['Nome', 'RA', 'E-mail', 'Perfil', 'Cargo', 'Departamento', 'Cadastrado em'];
 
     const rows = users.map(u => [
-      u.id || '',
-      u.nome || '',
-      u.ra   || '',
-      u.email || '',
-      u.tipo  || '',
-      u.cargo || '',
+      u.nome,
+      u.ra,
+      u.email,
+      tipoLabels[u.tipo] || u.tipo,
+      u.cargo        || '',
       u.departamento || '',
-      u.createdAt    ? new Date(u.createdAt).toLocaleDateString('pt-BR')
-        : u.dataCadastro ? new Date(u.dataCadastro).toLocaleDateString('pt-BR') : ''
+      u.createdAt ? new Date(u.createdAt).toLocaleDateString('pt-BR') : ''
     ]);
 
-    exportarCSV(headers, rows, 'cadastro-usuarios');
+    exportarCSV(headers, rows, 'cadastro_usuarios');
   }
 
   // ---- NINE BOX CSV ----
   window.exportarNineBoxCSV = function() {
-    if (allNineBoxData.length === 0) {
+    if (!allNineBoxData || allNineBoxData.length === 0) {
       showToast('Carregue o dashboard primeiro para exportar o Nine Box.', 'warning');
       return;
     }
 
     const CATEGORIAS = {
-      '1-1': 'Questão',    '2-1': 'Trabalhador', '3-1': 'Âncora',
-      '1-2': 'Dilema',     '2-2': 'Núcleo',      '3-2': 'Especialista',
-      '1-3': 'Enigma',     '2-3': 'Estrela',      '3-3': 'Superstar'
+      '1-1': 'Q1 (Insuficiente)',   '2-1': 'Q2 (Questionável)',   '3-1': 'Q3 (Especialista)',
+      '1-2': 'Q4 (Inconsistente)',  '2-2': 'Q5 (Profissional)',   '3-2': 'Q6 (Destaque)',
+      '1-3': 'Q7 (Enigma)',         '2-3': 'Q8 (Alto Potencial)', '3-3': 'Q9 (Estrela)'
     };
     const NIVEL = { 1: 'Baixo', 2: 'Médio', 3: 'Alto' };
 
+    const resolvePos = (nb) => {
+      let perf = nb.gridX ?? null;
+      let pot  = nb.gridY ?? null;
+      if (perf === null && nb.performance !== null) { const s = nb.performance; perf = s < 2.01 ? 1 : s < 3.01 ? 2 : 3; }
+      if (pot  === null && nb.potential   !== null) { const s = nb.potential;   pot  = s < 2.01 ? 1 : s < 3.01 ? 2 : 3; }
+      return { perf, pot };
+    };
+
     const headers = [
-      'Nome', 'RA', 'Tipo', 'Cargo', 'Departamento',
-      'Performance (Nível)', 'Performance', 'Potencial (Nível)', 'Potencial',
-      'Categoria Nine Box', 'Comentário', 'Data'
+      'Nome', 'RA', 'Cargo', 'Departamento',
+      'Performance (score)', 'Performance (nível)',
+      'Potencial (score)',   'Potencial (nível)',
+      'Categoria Nine Box'
     ];
 
-    const rows = allNineBoxData.map(nb => {
-      const p = nb.pessoa || {};
-      return [
-        p.nome || '', p.ra || '', p.tipo || '', p.cargo || '', p.departamento || '',
-        nb.performance || '', NIVEL[nb.performance] || '',
-        nb.potential   || '', NIVEL[nb.potential]   || '',
-        CATEGORIAS[`${nb.performance}-${nb.potential}`] || '',
-        nb.comentario || '',
-        nb.data ? new Date(nb.data).toLocaleDateString('pt-BR') : ''
-      ];
-    });
+    // Ordem: Q9 Estrela primeiro → Q1 Insuficiente por último
+    const ordemCats = [
+      'Q9 (Estrela)', 'Q8 (Alto Potencial)', 'Q7 (Enigma)',
+      'Q6 (Destaque)', 'Q5 (Profissional)', 'Q4 (Inconsistente)',
+      'Q3 (Especialista)', 'Q2 (Questionável)', 'Q1 (Insuficiente)'
+    ];
 
-    exportarCSV(headers, rows, 'nine-box');
+    const rows = allNineBoxData
+      .map(nb => {
+        const { perf, pot } = resolvePos(nb);
+        const p   = nb.pessoa || {};
+        const cat = CATEGORIAS[`${perf}-${pot}`] || '';
+        return { nb, p, perf, pot, cat };
+      })
+      .sort((a, b) =>
+        (ordemCats.indexOf(a.cat) - ordemCats.indexOf(b.cat)) ||
+        (a.p.nome || '').localeCompare(b.p.nome || '')
+      )
+      .map(({ nb, p, perf, pot, cat }) => [
+        p.nome         || '',
+        p.ra           || '',
+        p.cargo        || '',
+        p.departamento || '',
+        nb.performance != null ? Number(nb.performance).toFixed(2) : '',
+        NIVEL[perf]    || '',
+        nb.potential   != null ? Number(nb.potential).toFixed(2)   : '',
+        NIVEL[pot]     || '',
+        cat
+      ]);
+
+    exportarCSV(headers, rows, 'nine_box');
   };
 
 </script>
