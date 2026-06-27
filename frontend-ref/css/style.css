@@ -682,22 +682,71 @@ body.dark-mode .user-dropdown-info { background: #0f172a; }
 body.dark-mode #loading-overlay { background: rgba(15, 23, 42, 0.7); }
 
 /* =============================================
-   RESPONSIVE
+   RESPONSIVE — COMPLETO
    ============================================= */
-@media (max-width: 900px) {
-  .navbar { padding: 0; overflow-x: auto; }
-  .navbar-nav { justify-content: flex-start; }
-  .navbar-link { padding: 12px 14px; font-size: 12px; }
+
+/* ---- Large screens ---- */
+@media (min-width: 1440px) {
+  .wrapper { padding: 48px 40px; }
 }
 
+/* ---- Tablets / Small desktops ---- */
+@media (max-width: 1024px) {
+  .navbar { padding: 0 16px; }
+  .navbar-link { padding: 12px 12px; font-size: 12px; }
+}
+
+@media (max-width: 900px) {
+  .navbar { padding: 0; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .navbar::-webkit-scrollbar { display: none; }
+  .navbar-nav { justify-content: flex-start; min-width: max-content; }
+  .navbar-link { padding: 12px 14px; font-size: 12px; }
+  header h2 { font-size: 15px; }
+}
+
+/* ---- Tablets ---- */
 @media (max-width: 768px) {
   .container { grid-template-columns: repeat(2, 1fr); gap: 16px; width: 100%; max-width: 480px; }
   .card { height: 130px; }
   .wrapper { padding: 24px 16px; }
-  .form-box { max-width: 100%; }
+  .form-box { max-width: 100%; padding: 24px 20px; }
+  .dash-stats { gap: 10px; }
+  .dash-stat { min-width: 100px; padding: 12px 14px; }
+  .dash-stat-val { font-size: 18px; }
+  header { padding: 0 20px; }
+  #dark-mode-btn { right: 60px; }
 }
 
+/* ---- Mobile ---- */
 @media (max-width: 600px) {
   .navbar-link span { display: none; }
-  .navbar-link { padding: 12px 16px; }
+  .navbar-link { padding: 12px 14px; }
+  header h2 { font-size: 13px; max-width: calc(100% - 100px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  header { padding: 0 12px; }
+  #dark-mode-btn { right: 52px; width: 32px; height: 32px; font-size: 13px; }
+  .user-menu { right: 12px; }
+  .user { width: 32px; height: 32px; font-size: 13px; }
+}
+
+@media (max-width: 480px) {
+  .container { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .card { height: 110px; gap: 10px; }
+  .card i { font-size: 22px; }
+  .card p { font-size: 12px; }
+  .wrapper { padding: 16px 12px; }
+  .form-box { padding: 20px 16px; border-radius: var(--radius-sm); }
+  button { padding: 11px 16px; font-size: 13px; }
+  .dash-stat { min-width: 90px; padding: 10px 12px; }
+  .dash-stat-val { font-size: 16px; }
+  .dash-stat-label { font-size: 10px; }
+  .user-dropdown { min-width: 190px; }
+  .user-dropdown-nome { max-width: 120px; }
+  .toast { font-size: 12px; padding: 9px 16px; max-width: calc(100vw - 32px); white-space: normal; text-align: center; }
+}
+
+/* ---- Very small (320px) ---- */
+@media (max-width: 360px) {
+  .container { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .navbar-link { padding: 10px 10px; }
+  header h2 { font-size: 12px; }
 }

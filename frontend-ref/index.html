@@ -201,6 +201,39 @@
   .dash-stat-large .dash-stat-label {
     font-size: 14px;
   }
+
+  /* ---- RESPONSIVE ---- */
+  @media (max-width: 900px) {
+    .dash-stats-small { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .dash-stats-large { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  }
+
+  @media (max-width: 768px) {
+    .dash-welcome { padding: 32px 20px; max-width: 100%; }
+    .dash-welcome i { font-size: 40px; }
+    .dash-welcome h3 { font-size: 17px; }
+    .dash-welcome p { font-size: 13px; }
+    .dash-stat { gap: 12px; padding: 14px 16px; }
+    .dash-stat-large { gap: 14px; padding: 18px 16px; }
+    .dash-stat-large i { width: 44px; height: 44px; font-size: 24px; }
+    .dash-stat-large .dash-stat-val { font-size: 28px; }
+  }
+
+  @media (max-width: 480px) {
+    .dash-stats-small { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .dash-stats-large { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .dash-stat { padding: 12px; }
+    .dash-stat i { width: 36px; height: 36px; font-size: 18px; }
+    .dash-stat .dash-stat-val { font-size: 22px; }
+    .dash-stat-large { padding: 14px; }
+    .dash-stat-large i { width: 36px; height: 36px; font-size: 20px; }
+    .dash-stat-large .dash-stat-val { font-size: 24px; }
+  }
+
+  @media (max-width: 360px) {
+    .dash-stats-small { grid-template-columns: 1fr 1fr; }
+    .dash-stats-large { grid-template-columns: 1fr 1fr; }
+  }
 </style>
 
 <main class="wrapper wrapper-center">

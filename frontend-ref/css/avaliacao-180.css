@@ -640,9 +640,42 @@
 }
 
 /* ---- RESPONSIVE ---- */
+@media (max-width: 900px) {
+  .r180-main { padding: 24px 16px; }
+}
+
+@media (max-width: 768px) {
+  .r180-lista-header { flex-direction: column; align-items: flex-start; }
+  .r180-btn-novo { width: 100%; justify-content: center; }
+  .r180-item-card { flex-direction: column; }
+  .r180-item-actions { flex-wrap: wrap; }
+  .r180-card { padding: 24px 18px; }
+  .r180-card-header { flex-direction: column; align-items: flex-start; }
+  .r180-btn-cancelar { width: 100%; justify-content: center; }
+  .r180-form-actions { flex-direction: column-reverse; gap: 10px; }
+  .r180-btn-voltar, .r180-btn-salvar { width: 100%; justify-content: center; }
+  .r180-modal-actions { flex-direction: column; }
+  .r180-modal-actions > button { width: 100%; justify-content: center; }
+}
+
 @media (max-width: 640px) {
+  .r180-main { padding: 16px 12px; }
   .r180-info-grid { grid-template-columns: 1fr; }
-  .r180-card { padding: 20px 16px; }
+  .r180-info-datas { flex-direction: column; gap: 10px; }
+  .r180-card { padding: 18px 14px; }
+  .r180-select-bar { flex-direction: column; gap: 8px; }
+  .r180-modal-actions-3 { flex-direction: column; gap: 8px; }
+  .r180-btn-criar-avaliado, .r180-btn-confirmar, .r180-btn-proximo { width: 100%; justify-content: center; }
+  .r180-check-lista { max-height: 260px; }
+  .r180-avaliado-tags { display: none; }
+}
+
+@media (max-width: 480px) {
+  .r180-modal { padding: 20px 14px; }
+  .r180-modal-lg { width: calc(100vw - 20px); }
+  .r180-check-item { padding: 10px 12px; gap: 10px; }
+  .r180-confirm-actions { flex-direction: column; }
+  .r180-confirm-btn-cancel, .r180-confirm-btn-ok { width: 100%; }
 }
 
 /* =============================================

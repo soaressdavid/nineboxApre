@@ -635,21 +635,57 @@
 }
 
 /* ---- RESPONSIVE ---- */
+@media (max-width: 900px) {
+  .av-step-box { padding: 32px 28px; }
+  .av-tipo-cards { gap: 16px; }
+}
+
 @media (max-width: 768px) {
   .av-wrapper {
     flex-direction: column;
     align-items: stretch;
     padding: 20px 16px;
   }
-
   .av-form-card,
   .av-historico-card {
     max-width: 100%;
+    min-width: unset;
+    padding: 20px 16px;
   }
+  .av-type-toggle { flex-direction: column; gap: 6px; }
+  .av-step-box { padding: 24px 16px; gap: 20px; }
+  .av-step-subtitle { font-size: 14px; }
+  .ninebox-rating { flex-wrap: wrap; }
+  .ninebox-option { flex: 1; min-width: 140px; }
+}
 
-  .av-type-toggle {
-    flex-direction: column;
-  }
+@media (max-width: 600px) {
+  .av-step-box { padding: 20px 14px; }
+  .av-tipo-cards { gap: 10px; }
+  .av-tipo-card { min-width: 120px; padding: 18px 10px 14px; }
+  .av-tipo-icon { width: 52px; height: 52px; }
+  .av-tipo-icon i { font-size: 22px; }
+  .av-tipo-card span { font-size: 12px; }
+  .av-step-actions { flex-direction: column-reverse; gap: 10px; }
+  .av-btn-proximo, .av-btn-voltar { width: 100%; justify-content: center; text-align: center; }
+  .av-criterio { flex-wrap: wrap; gap: 8px; }
+  .av-criterio .stars { flex-wrap: wrap; }
+  .av-criterio .stars span { font-size: 20px; }
+  .av-media-box { flex-direction: column; gap: 4px; text-align: center; }
+  .av-filtros { flex-wrap: wrap; }
+  .av-historico-header { flex-direction: column; align-items: flex-start; }
+}
+
+@media (max-width: 480px) {
+  .av-form-card,
+  .av-historico-card { padding: 16px 12px; border-radius: var(--radius-sm); }
+  .av-tipo-cards { gap: 8px; }
+  .av-tipo-card { min-width: 100px; padding: 14px 8px 12px; }
+  .ninebox-option { padding: 8px; }
+  .ninebox-option-content strong { font-size: 11px; }
+  .av-item { padding: 12px; }
+  .av-item-header { flex-direction: column; gap: 4px; align-items: flex-start; }
+  .av-item-meta { align-items: flex-start; }
 }
 
 /* =============================================
@@ -842,26 +878,4 @@
   box-shadow: none;
 }
 
-@media (max-width: 600px) {
-  .av-step-box {
-    padding: 28px 20px;
-  }
 
-  .av-tipo-cards {
-    gap: 12px;
-  }
-
-  .av-tipo-card {
-    min-width: 130px;
-    padding: 20px 12px 16px;
-  }
-
-  .av-tipo-icon {
-    width: 56px;
-    height: 56px;
-  }
-
-  .av-tipo-icon i {
-    font-size: 24px;
-  }
-}

@@ -359,10 +359,32 @@
 }
 
 /* ---- RESPONSIVE ---- */
+@media (max-width: 900px) {
+  .resp180-main { padding: 24px 16px; }
+}
+
+@media (max-width: 768px) {
+  .resp180-header-card { padding: 18px 20px; }
+  .resp180-header-nome { font-size: 17px; }
+  .resp180-actions { flex-direction: column; gap: 10px; }
+  .resp180-btn-enviar { width: 100%; justify-content: center; }
+}
+
 @media (max-width: 640px) {
-  .resp180-main { padding: 20px 16px; }
-  .resp180-header-card { flex-direction: column; gap: 12px; }
-  .resp180-comp-card { padding: 18px 16px; }
-  .resp180-notas { gap: 6px; }
-  .resp180-nota-btn { padding: 7px 12px; font-size: 11px; }
+  .resp180-main { padding: 16px 12px; }
+  .resp180-header-card { flex-direction: column; gap: 12px; padding: 16px; }
+  .resp180-comp-card { padding: 18px 14px; }
+  .resp180-notas { gap: 6px; flex-wrap: wrap; }
+  .resp180-nota-btn { padding: 7px 12px; font-size: 11px; flex: 1; min-width: 100px; justify-content: center; }
+  .resp180-legenda { gap: 6px; }
+  .resp180-legenda-item { font-size: 10px; }
+}
+
+@media (max-width: 480px) {
+  .resp180-main { padding: 12px 10px; }
+  .resp180-comp-card { padding: 14px 12px; }
+  .resp180-criterio-texto { font-size: 13px; }
+  .resp180-nota-btn { flex: 1; min-width: 80px; padding: 8px 8px; font-size: 11px; }
+  .resp180-actions { margin-top: 16px; padding-top: 14px; }
+  .resp180-btn-enviar { padding: 12px 20px; font-size: 14px; }
 }

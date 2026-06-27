@@ -179,6 +179,36 @@
       opacity: 0.5;
       cursor: not-allowed;
     }
+
+    /* ---- RESPONSIVE ---- */
+    @media (max-width: 900px) {
+      .historico-container { padding: 24px 16px; }
+      .historico-card { padding: 28px 20px; }
+    }
+
+    @media (max-width: 768px) {
+      .historico-card { padding: 20px 16px; }
+      .historico-titulo { font-size: 22px; }
+      .filtros-container { flex-direction: column; gap: 10px; }
+      .filtro-item { min-width: unset; width: 100%; }
+      .filtro-item:last-child { align-items: flex-start; }
+      .btn-filtrar { width: 100%; }
+      .historico-tabela { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .historico-tabela thead { display: none; }
+      .historico-tabela tbody, .historico-tabela tr { display: block; }
+      .historico-tabela td { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: none; font-size: 13px; }
+      .historico-tabela td::before { content: attr(data-label); font-weight: 600; color: var(--text-muted); font-size: 11px; text-transform: uppercase; margin-right: 8px; flex-shrink: 0; }
+      .historico-tabela tr { border: 1.5px solid var(--border); border-radius: var(--radius-sm); margin-bottom: 10px; background: var(--surface); padding: 4px 0; }
+      .historico-tabela tr:hover { background: var(--bg); }
+    }
+
+    @media (max-width: 480px) {
+      .historico-container { padding: 16px 12px; }
+      .historico-card { padding: 16px 12px; border-radius: var(--radius-sm); }
+      .historico-titulo { font-size: 18px; }
+      .pagination { flex-wrap: wrap; gap: 8px; }
+      .pagination button { padding: 6px 12px; font-size: 13px; }
+    }
   </style>
 </head>
 <body>

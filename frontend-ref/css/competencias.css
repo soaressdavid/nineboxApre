@@ -543,20 +543,34 @@
 }
 
 /* ---- RESPONSIVE ---- */
+@media (max-width: 900px) {
+  .comp-main { padding: 24px 16px; }
+}
+
+@media (max-width: 768px) {
+  .comp-lista-header { flex-direction: column; align-items: flex-start; }
+  .comp-btn-novo { width: 100%; justify-content: center; }
+  .comp-card { flex-direction: column; }
+  .comp-card-actions { flex-wrap: wrap; gap: 6px; }
+  .comp-btn-edit, .comp-btn-del { flex: 1; justify-content: center; }
+  .comp-form-header { flex-direction: column; align-items: flex-start; }
+  .comp-btn-cancelar { width: 100%; justify-content: center; }
+  .comp-form-actions { flex-direction: column-reverse; gap: 10px; }
+  .comp-btn-voltar, .comp-btn-salvar { width: 100%; justify-content: center; }
+}
+
 @media (max-width: 640px) {
-  .comp-criterios-grid {
-    grid-template-columns: 1fr;
-  }
+  .comp-main { padding: 16px 12px; }
+  .comp-criterios-grid { grid-template-columns: 1fr; }
+  .comp-escala-grid { grid-template-columns: 1fr; }
+  .comp-row { flex-direction: column; }
+  .comp-form-card { padding: 18px 14px; }
+  .comp-criterios-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .comp-btn-add-criterio { width: 100%; justify-content: center; }
+}
 
-  .comp-escala-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .comp-row {
-    flex-direction: column;
-  }
-
-  .comp-form-card {
-    padding: 20px 16px;
-  }
+@media (max-width: 480px) {
+  .comp-card { padding: 16px; }
+  .comp-form-card { padding: 16px 12px; border-radius: var(--radius-sm); }
+  .comp-card-nome { font-size: 14px; }
 }

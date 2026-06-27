@@ -67,6 +67,55 @@
       margin-bottom: 24px;
     }
     @media (max-width: 640px) { .rel-stats { grid-template-columns: repeat(2, 1fr); } }
+
+    /* ---- Additional responsive rules ---- */
+    @media (max-width: 1024px) {
+      .nb-dist-wrapper { flex-direction: column; }
+      .nb-dist-sidebar { min-width: unset; max-width: 100%; }
+    }
+
+    @media (max-width: 900px) {
+      .rel-container { padding: 0; }
+      .rel-tabs { flex-wrap: wrap; width: 100%; }
+      .rel-tab { flex: 1; min-width: 120px; justify-content: center; padding: 8px 12px; }
+      .nb-dist-grid { max-width: 100%; }
+    }
+
+    @media (max-width: 768px) {
+      .rel-wrapper { padding: 16px 12px; }
+      .rel-stats { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+      .rel-stat-card { padding: 14px 12px; }
+      .rel-stat-val { font-size: 20px; }
+      .rel-user-search { flex-direction: column; }
+      .rel-user-search > div { width: 100%; }
+      .btn-buscar-rel { width: 100%; justify-content: center; }
+      .rel-user-card-header { padding: 16px; gap: 12px; }
+      .rel-user-card-body { padding: 16px; }
+      .rel-av-header { flex-direction: column; align-items: flex-start; }
+      .nb-dist-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+      .nb-dist-container { padding: 16px; }
+      .nb-dist-cell { padding: 10px; }
+      .nb-dist-cell .nb-dist-count { font-size: 26px; }
+      .nb-dist-cell .nb-dist-icon { font-size: 24px; }
+      .nb-modal-box { padding: 18px; }
+    }
+
+    @media (max-width: 480px) {
+      .rel-wrapper { padding: 12px 10px; }
+      .rel-stats { grid-template-columns: 1fr 1fr; gap: 8px; }
+      .rel-stat-card { padding: 12px 10px; gap: 10px; }
+      .rel-stat-icon { width: 36px; height: 36px; font-size: 15px; border-radius: 8px; }
+      .rel-stat-val { font-size: 18px; }
+      .rel-stat-label { font-size: 10px; }
+      .rel-tabs { padding: 3px; gap: 3px; }
+      .rel-tab { padding: 6px 10px; font-size: 12px; }
+      .nb-dist-cell .nb-dist-count { font-size: 20px; }
+      .nb-dist-cell .nb-dist-icon { font-size: 18px; }
+      .nb-dist-cell .nb-dist-label { font-size: 9px; }
+      .nb-dist-grid { gap: 6px; }
+      .nb-modal-box { padding: 16px 12px; }
+      .nb-user-item { padding: 10px; gap: 10px; }
+    }
     .rel-stat-card {
       background: var(--surface);
       border: 1.5px solid var(--border);
