@@ -7,34 +7,25 @@ class ReportsController {
     try {
       const stats = await reportsService.getDashboardStats(req.user.tipo);
       
-      // Adaptar formato para compatibilidade com frontend
-      const response = {
-        totalUsuarios: stats.totalUsuarios || stats.usuarios.total,
-        totalGestores: stats.totalGestores || stats.usuarios.porTipo?.gestor || 0,
-        totalColaboradores: stats.totalColaboradores || stats.usuarios.porTipo?.colaborador || 0,
-        totalAvaliacoes: stats.avaliacoes.total,
-        totalNineBox: stats.totalNineBox ?? stats.nineBox?.total ?? 0,
-        totalCampanhas: stats.totalCampanhas || 0,
-        campanhasAtivas: stats.campanhasAtivas || 0,
-        totalCompetencias: stats.totalCompetencias || 0,
-        totalGrupos: stats.totalGrupos || 0,
-        totalRelatorios: stats.totalRelatorios || 0,
-        usuariosAtivos: stats.usuariosAtivos || stats.totalUsuarios || stats.usuarios.total || 0,
-        avaliacoesPendentes: stats.avaliacoesPendentes || 0,
-        mediaGeral: parseFloat((stats.avaliacoes.mediaGeral || 0).toFixed(1)),
-        ultimasAvaliacoes: stats.avaliacoes.lista || [],
-        usuarios: stats.usuarios,
-        avaliacoes: stats.avaliacoes,
-        nineBox: stats.nineBox,
-        competencias: stats.competencias,
-        campanhas: stats.campanhas,
-        grupos: stats.grupos,
-        timestamp: stats.timestamp
-      };
-      
       return res.json({
         success: true,
-        data: response
+        data: {
+          totalUsuarios:       stats.totalUsuarios,
+          totalGestores:       stats.totalGestores,
+          totalColaboradores:  stats.totalColaboradores,
+          totalAvaliacoes:     stats.totalAvaliacoes,
+          totalNineBox:        stats.totalNineBox,
+          totalCampanhas:      stats.totalCampanhas,
+          campanhasAtivas:     stats.campanhasAtivas,
+          totalCompetencias:   stats.totalCompetencias,
+          totalGrupos:         stats.totalGrupos,
+          usuariosAtivos:      stats.usuariosAtivos,
+          avaliacoesPendentes: stats.avaliacoesPendentes,
+          mediaGeral:          stats.mediaGeral,
+          nineBox:             stats.nineBox,
+          competencias:        stats.competencias,
+          timestamp:           stats.timestamp,
+        }
       });
     } catch (error) {
       next(error);
@@ -49,25 +40,19 @@ class ReportsController {
         req.user.tipo
       );
       
-      // Adaptar formato para compatibilidade com frontend
-      const response = {
-        user: report.usuario,
-        usuario: report.usuario, // Manter ambos para compatibilidade
-        avaliacoesRecebidas: report.avaliacoesRecebidas.total,
-        avaliacoesFeitas: report.avaliacoesFeitas.total,
-        mediaGeral: parseFloat(report.avaliacoesRecebidas.mediaGeral.toFixed(1)),
-        ultimasAvaliacoes: report.avaliacoesRecebidas.lista.slice(0, 10),
-        criteriosMedia: this.calcularMediaCriterios(report.avaliacoesRecebidas.lista),
-        nineBox: report.nineBox,
-        // Manter também o formato original para compatibilidade
-        avaliacoesRecebidasDetalhes: report.avaliacoesRecebidas,
-        avaliacoesFeitasDetalhes: report.avaliacoesFeitas,
-        timestamp: report.timestamp
-      };
-      
       return res.json({
         success: true,
-        data: response
+        data: {
+          user:                report.user,
+          usuario:             report.usuario,
+          avaliacoesRecebidas: report.avaliacoesRecebidas,
+          avaliacoesFeitas:    report.avaliacoesFeitas,
+          mediaGeral:          report.mediaGeral,
+          ultimasAvaliacoes:   report.ultimasAvaliacoes,
+          criteriosMedia:      report.criteriosMedia,
+          nineBox:             report.nineBox,
+          timestamp:           report.timestamp,
+        }
       });
     } catch (error) {
       next(error);

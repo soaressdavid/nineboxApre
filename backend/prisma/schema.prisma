@@ -33,6 +33,8 @@ model User {
   @@index([ra])
   @@index([email])
   @@index([deletedAt])
+  @@index([tipo])
+  @@index([departamento])
   @@map("users")
 }
 
@@ -135,6 +137,7 @@ model Evaluation {
   @@index([avaliadoId])
   @@index([avaliadorId])
   @@index([data])
+  @@index([campaignId, avaliadoId])
   @@map("evaluations")
 }
 
@@ -152,6 +155,7 @@ model NineBox {
 
   @@unique([pessoaId])
   @@index([pessoaId])
+  @@index([categoria])
   @@map("nine_box")
 }
 

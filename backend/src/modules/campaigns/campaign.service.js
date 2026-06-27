@@ -234,59 +234,38 @@ class CampaignService {
     AuthorizationService.requireColaborador(userTipo);
 
     try {
-      // Busca campanhas ativas
-      const campaigns = await this.campaignRepository.findAll({ status: 'ativa' });
-
-      // Buscar MEU gestor direto (colaborador tem apenas 1 gestor)
       const meusGestores = await this.groupRepository.findGestoresByColaborador(userId);
-      
-      if (meusGestores.length === 0) {
-        // Colaborador sem gestor não tem campanhas pendentes
-        return [];
-      }
-
-      // Pegar o ID do meu gestor (assumindo apenas 1 gestor por colaborador)
+      if (meusGestores.length === 0) return [];
       const meuGestorId = meusGestores[0].id;
 
-      // Buscar todas as avaliações que já fiz
-      const todasAvaliacoes = await this.evaluationRepository.findByAvaliador(
-        userId, 
-        { page: 1, limit: 1000 }
+      // Campanhas ativas onde colaborador pode avaliar gestor
+      const campaigns = await this.campaignRepository.findAll({ status: 'ativa' });
+      const campsFiltradas = (campaigns.campaigns || []).filter(c =>
+        c.tipoAlvo === 'gestor' || c.tipoAlvo === 'todos'
       );
 
-      // Criar mapa: campaignId+avaliadoId → true (para verificar se já avaliei aquele gestor naquela campanha)
-      const jaAvalieiMap = {};
-      todasAvaliacoes.evaluations.forEach(av => {
-        const key = `${av.campaignId}_${av.avaliadoId}`;
-        jaAvalieiMap[key] = true;
+      if (campsFiltradas.length === 0) return [];
+
+      const campaignIds = campsFiltradas.map(c => c.id);
+
+      // Uma query: verificar se meu gestor está em alguma dessas campanhas
+      const gestorNasCampanhas = await prisma.campaignGestor.findMany({
+        where: { campaignId: { in: campaignIds }, gestorId: meuGestorId },
+        select: { campaignId: true }
       });
+      const campanhasComMeuGestor = new Set(gestorNasCampanhas.map(cg => cg.campaignId));
 
-      // Filtrar campanhas pendentes
-      const campaignsPendentes = [];
+      // Uma query: avaliacoes que já fiz nessas campanhas
+      const jaFiz = await prisma.evaluation.findMany({
+        where: { avaliadorId: userId, campaignId: { in: [...campanhasComMeuGestor] } },
+        select: { campaignId: true, avaliadoId: true }
+      });
+      const jaAvalieiMap = new Set(jaFiz.map(av => `${av.campaignId}_${av.avaliadoId}`));
 
-      for (const campaign of campaigns.campaigns) {
-        // Apenas campanhas onde colaborador pode avaliar gestor
-        if (campaign.tipoAlvo !== 'gestor' && campaign.tipoAlvo !== 'todos') {
-          continue;
-        }
-
-        // Verificar se MEU gestor está nesta campanha
-        const meuGestorEstaNaCampanha = campaign.gestores?.some(cg => cg.gestorId === meuGestorId);
-        
-        if (!meuGestorEstaNaCampanha) {
-          // Meu gestor não está nesta campanha, pular
-          continue;
-        }
-
-        // Verificar se já avaliei MEU gestor nesta campanha
-        const key = `${campaign.id}_${meuGestorId}`;
-        if (!jaAvalieiMap[key]) {
-          // Ainda não avaliei meu gestor nesta campanha
-          campaignsPendentes.push(campaign);
-        }
-      }
-
-      return campaignsPendentes;
+      return campsFiltradas.filter(campaign => {
+        if (!campanhasComMeuGestor.has(campaign.id)) return false;
+        return !jaAvalieiMap.has(`${campaign.id}_${meuGestorId}`);
+      });
     } catch (error) {
       console.error('Erro em getPendingCampaignsForColaborador:', error);
       throw error;
@@ -297,31 +276,48 @@ class CampaignService {
     AuthorizationService.requireGestor(userTipo);
 
     try {
-      // Busca campanhas ativas onde o gestor é responsável
+      // Campanhas ativas onde o gestor é responsável e avalia colaboradores
       const campaigns = await this.campaignRepository.findActiveForGestor(userId);
-
-      // Filtra campanhas onde gestores avaliam colaboradores (tipoAlvo: colaborador)
-      // Gestores não podem avaliar em campanhas tipoAlvo: gestor
       const filteredCampaigns = campaigns.filter(c => c.tipoAlvo === 'colaborador' || c.tipoAlvo === 'todos');
 
-      // Para cada campanha, verifica se o gestor ainda tem colaboradores para avaliar
-      const campaignsPendentes = [];
+      if (filteredCampaigns.length === 0) return [];
 
-      for (const campaign of filteredCampaigns) {
-        try {
-          // Busca colaboradores que o gestor deve avaliar nesta campanha
-          const colaboradoresNaoAvaliados = await this.campaignRepository.getColaboradoresNaoAvaliados(campaign.id, userId);
+      const campaignIds = filteredCampaigns.map(c => c.id);
 
-          if (colaboradoresNaoAvaliados.length > 0) {
-            campaignsPendentes.push(campaign);
-          }
-        } catch (error) {
-          console.error(`Erro ao processar campanha ${campaign.id}:`, error);
-          // Continue with next campaign
+      // Uma única query: busca todos os CampaignGestor + colaboradores avaliáveis para este gestor
+      const campaignGestores = await prisma.campaignGestor.findMany({
+        where: { campaignId: { in: campaignIds }, gestorId: userId },
+        select: {
+          campaignId: true,
+          colaboradoresAvaliaveis: { select: { colaboradorId: true } }
         }
+      });
+
+      // Uma única query: todas as avaliações já feitas por este gestor nessas campanhas
+      const avaliacoes = await prisma.evaluation.findMany({
+        where: { campaignId: { in: campaignIds }, avaliadorId: userId },
+        select: { campaignId: true, avaliadoId: true }
+      });
+
+      // Mapa: campaignId → Set de avaliadoIds já avaliados
+      const avaliadosPorCampanha = {};
+      for (const av of avaliacoes) {
+        if (!avaliadosPorCampanha[av.campaignId]) avaliadosPorCampanha[av.campaignId] = new Set();
+        avaliadosPorCampanha[av.campaignId].add(av.avaliadoId);
       }
 
-      return campaignsPendentes;
+      // Mapa: campaignId → array de colaboradorIds esperados
+      const colaboradoresPorCampanha = {};
+      for (const cg of campaignGestores) {
+        colaboradoresPorCampanha[cg.campaignId] = cg.colaboradoresAvaliaveis.map(c => c.colaboradorId);
+      }
+
+      // Filtra campanhas que ainda têm colaboradores pendentes
+      return filteredCampaigns.filter(campaign => {
+        const esperados  = colaboradoresPorCampanha[campaign.id] || [];
+        const avaliados  = avaliadosPorCampanha[campaign.id]     || new Set();
+        return esperados.some(id => !avaliados.has(id));
+      });
     } catch (error) {
       console.error('Erro em getPendingCampaignsForGestor:', error);
       throw error;

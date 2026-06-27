@@ -12,27 +12,27 @@ class RefreshTokenService {
    * Gera par de tokens (access + refresh) para um usuário
    */
   generateTokenPair(user) {
-    const accessToken = jwt.sign(
+    const token = jwt.sign(
       { userId: user.id, email: user.email, tipo: user.tipo, ra: user.ra },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN || '15m' }
     );
 
-    return { accessToken };
+    return { token };
   }
 
   /**
    * Cria refresh token no banco e retorna o par completo
    */
   async createTokenPair(user) {
-    const { accessToken } = this.generateTokenPair(user);
+    const { token } = this.generateTokenPair(user);
     const refreshTokenRecord = await this.refreshTokenRepository.create(
       user.id,
       parseInt(process.env.REFRESH_TOKEN_EXPIRES_DAYS) || 7
     );
 
     return {
-      accessToken,
+      token,
       refreshToken: refreshTokenRecord.token,
       expiresIn: process.env.JWT_EXPIRES_IN || '15m'
     };

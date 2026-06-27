@@ -125,98 +125,149 @@ class NineBoxService {
   }
 
   // Calcula Nine Box para todos os usuários (para admin)
+  // Usa uma única query em batch para buscar TODAS as avaliações de uma vez (evita N+1)
   async calculateAllNineBoxes() {
-    // Busca todos os usuários
-    const users = await this.userRepository.findAll({ page: 1, limit: 1000 });
-    const allUsers = users.users || [];
+    try {
+      const { prisma } = await import('../../config/database.js');
 
-    if (!allUsers || allUsers.length === 0) {
-      return {
-        team: [],
-        total: 0
-      };
-    }
+      // 1. Busca todos os usuários ativos em uma query
+      const users = await this.userRepository.findAll({ page: 1, limit: 1000 });
+      const allUsers = users.users || [];
+      if (allUsers.length === 0) return { team: [], total: 0 };
 
-    // Calcula Nine Box para cada usuário
-    const allNineBoxes = await Promise.all(
-      allUsers.map(async (user) => {
-        const nineBox = await this.calculateNineBoxFromEvaluations(user.id);
-        return {
-          ...nineBox,
+      const userIds = allUsers.map(u => u.id);
+
+      // 2. Busca TODAS as avaliações de todos os usuários de uma única vez
+      const allEvaluations = await prisma.evaluation.findMany({
+        where: { avaliadoId: { in: userIds } },
+        select: {
+          avaliadoId: true,
+          media: true,
+          campaign: { select: { tipoAvaliacao: true } }
+        }
+      });
+
+      // 3. Agrupa as avaliações por avaliadoId em memória
+      const evalsByUser = {};
+      for (const ev of allEvaluations) {
+        if (!evalsByUser[ev.avaliadoId]) evalsByUser[ev.avaliadoId] = [];
+        evalsByUser[ev.avaliadoId].push(ev);
+      }
+
+      // 4. Calcula scores em memória (zero queries extras)
+      const result = [];
+      for (const user of allUsers) {
+        const evals = evalsByUser[user.id] || [];
+
+        const mediasDes = evals.filter(ev => ev.campaign?.tipoAvaliacao === 'desempenho' && ev.media != null).map(ev => ev.media);
+        const mediasPot = evals.filter(ev => ev.campaign?.tipoAvaliacao === 'potencial'   && ev.media != null).map(ev => ev.media);
+
+        const avg = arr => arr.length > 0 ? parseFloat((arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(2)) : null;
+        const performance = avg(mediasDes);
+        const potential   = avg(mediasPot);
+
+        if (performance === null && potential === null) continue;
+
+        const perfFinal = performance ?? potential;
+        const potFinal  = potential  ?? performance;
+        const categoria = this.calculateCategoria(perfFinal, potFinal);
+
+        result.push({
+          avaliadoId: user.id,
           id: user.id,
+          performance: perfFinal,
+          potential:   potFinal,
+          gridX: this.scoreToGridPos(perfFinal),
+          gridY: this.scoreToGridPos(potFinal),
+          categoria,
+          performanceReal:      performance,
+          potentialReal:        potential,
+          performanceInferido:  performance === null,
+          potentialInferido:    potential   === null,
           pessoa: {
-            id: user.id,
-            nome: user.nome,
-            email: user.email,
-            tipo: user.tipo,
-            cargo: user.cargo,
-            departamento: user.departamento,
-            ra: user.ra,
-            foto: user.foto
+            id: user.id, nome: user.nome, email: user.email, tipo: user.tipo,
+            cargo: user.cargo, departamento: user.departamento, ra: user.ra, foto: user.foto
           }
-        };
-      })
-    );
+        });
+      }
 
-    // Filtra apenas usuários com dados válidos (performance e potential não null)
-    const validNineBoxes = allNineBoxes.filter(nb => nb.performance !== null && nb.potential !== null);
-
-    return {
-      team: validNineBoxes,
-      total: validNineBoxes.length
-    };
+      return { team: result, total: result.length };
+    } catch (error) {
+      console.error('[calculateAllNineBoxes] Error:', error);
+      throw error;
+    }
   }
 
   // Calcula Nine Box para todo o time de um gestor
+  // Usa batch query para evitar N+1
   async calculateTeamNineBox(gestorId) {
-    // Busca todos os usuários (colaboradores e gestores) relacionados ao gestor
-    const pessoas = await this.userRepository.findByGestorId(gestorId);
+    const { prisma } = await import('../../config/database.js');
 
-    // Busca também gestores que são subordinados a este gestor
+    const pessoas = await this.userRepository.findByGestorId(gestorId);
     const gestoresSubordinados = await this.userRepository.findGestoresByGestorId(gestorId);
 
-    // Combina as listas, removendo duplicatas
     const todasPessoas = [...pessoas];
-    gestoresSubordinados.forEach(gestor => {
-      if (!todasPessoas.some(p => p.id === gestor.id)) {
-        todasPessoas.push(gestor);
+    gestoresSubordinados.forEach(g => {
+      if (!todasPessoas.some(p => p.id === g.id)) todasPessoas.push(g);
+    });
+
+    if (todasPessoas.length === 0) return { gestorId, team: [], total: 0 };
+
+    const ids = todasPessoas.map(p => p.id);
+
+    // Busca todas as avaliações do time em uma única query
+    const allEvaluations = await prisma.evaluation.findMany({
+      where: { avaliadoId: { in: ids } },
+      select: {
+        avaliadoId: true,
+        media: true,
+        campaign: { select: { tipoAvaliacao: true } }
       }
     });
 
-    if (!todasPessoas || todasPessoas.length === 0) {
-      return {
-        gestorId,
-        team: [],
-        total: 0
-      };
+    const evalsByUser = {};
+    for (const ev of allEvaluations) {
+      if (!evalsByUser[ev.avaliadoId]) evalsByUser[ev.avaliadoId] = [];
+      evalsByUser[ev.avaliadoId].push(ev);
     }
 
-    // Calcula Nine Box para cada pessoa (incluindo gestores)
-    const teamNineBox = await Promise.all(
-      todasPessoas.map(async (pessoa) => {
-        const nineBox = await this.calculateNineBoxFromEvaluations(pessoa.id);
-        return {
-          ...nineBox,
-          id: pessoa.id, // Use pessoa ID as ID for frontend compatibility
-          pessoa: {
-            id: pessoa.id,
-            nome: pessoa.nome,
-            email: pessoa.email,
-            tipo: pessoa.tipo,
-            cargo: pessoa.cargo,
-            departamento: pessoa.departamento,
-            ra: pessoa.ra,
-            foto: pessoa.foto
-          }
-        };
-      })
-    );
+    const avg = arr => arr.length > 0 ? parseFloat((arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(2)) : null;
 
-    return {
-      gestorId,
-      team: teamNineBox,
-      total: todasPessoas.length
-    };
+    const teamNineBox = todasPessoas.map(pessoa => {
+      const evals = evalsByUser[pessoa.id] || [];
+      const mediasDes = evals.filter(ev => ev.campaign?.tipoAvaliacao === 'desempenho' && ev.media != null).map(ev => ev.media);
+      const mediasPot = evals.filter(ev => ev.campaign?.tipoAvaliacao === 'potencial'   && ev.media != null).map(ev => ev.media);
+
+      const performance = avg(mediasDes);
+      const potential   = avg(mediasPot);
+
+      if (performance === null && potential === null) {
+        return {
+          avaliadoId: pessoa.id, id: pessoa.id,
+          performance: null, potential: null,
+          categoria: 'Sem dados suficientes',
+          message: 'Não há avaliações recebidas suficientes para calcular o Nine Box',
+          pessoa: { id: pessoa.id, nome: pessoa.nome, email: pessoa.email, tipo: pessoa.tipo, cargo: pessoa.cargo, departamento: pessoa.departamento, ra: pessoa.ra, foto: pessoa.foto }
+        };
+      }
+
+      const perfFinal = performance ?? potential;
+      const potFinal  = potential  ?? performance;
+      const categoria = this.calculateCategoria(perfFinal, potFinal);
+
+      return {
+        avaliadoId: pessoa.id, id: pessoa.id,
+        performance: perfFinal, potential: potFinal,
+        gridX: this.scoreToGridPos(perfFinal),
+        gridY: this.scoreToGridPos(potFinal),
+        categoria,
+        performanceReal: performance, potentialReal: potential,
+        performanceInferido: performance === null, potentialInferido: potential === null,
+        pessoa: { id: pessoa.id, nome: pessoa.nome, email: pessoa.email, tipo: pessoa.tipo, cargo: pessoa.cargo, departamento: pessoa.departamento, ra: pessoa.ra, foto: pessoa.foto }
+      };
+    });
+
+    return { gestorId, team: teamNineBox, total: todasPessoas.length };
   }
 
   async create(data, userTipo) {

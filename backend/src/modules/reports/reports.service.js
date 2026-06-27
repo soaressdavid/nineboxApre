@@ -6,6 +6,7 @@ import { NineBoxRepository } from '../ninebox/ninebox.repository.js';
 import { CompetencyRepository } from '../competencies/competency.repository.js';
 import { CampaignRepository } from '../campaigns/campaign.repository.js';
 import { GroupRepository } from '../groups/group.repository.js';
+import { prisma } from '../../config/database.js';
 
 class ReportsService {
   constructor() {
@@ -20,98 +21,118 @@ class ReportsService {
   async getDashboardStats(userTipo) {
     AuthorizationService.forbidColaborador(userTipo);
 
-    const [gestores, colaboradores, evaluations, nineBoxStats, competencyStats, campaigns, groupsCount] = await Promise.all([
-      this.userRepository.findAll({ page: 1, limit: 1, tipo: 'gestor' }),
-      this.userRepository.findAll({ page: 1, limit: 1, tipo: 'colaborador' }),
-      this.evaluationRepository.findAll({ page: 1, limit: 10 }),
+    // Todas as contagens em paralelo via count() direto — sem fetch de objetos
+    const [
+      totalGestores,
+      totalColaboradores,
+      totalAvaliacoes,
+      nineBoxStats,
+      competencyStats,
+      totalCampanhas,
+      campanhasAtivas,
+      groupsCount,
+      mediaGeralResult
+    ] = await Promise.all([
+      prisma.user.count({ where: { tipo: 'gestor',       deletedAt: null } }),
+      prisma.user.count({ where: { tipo: 'colaborador',  deletedAt: null } }),
+      prisma.evaluation.count(),
       this.nineBoxRepository.getGridDistribution(),
       this.competencyRepository.getStatsByTipo(),
-      this.campaignRepository.findAll({ page: 1, limit: 100 }),
-      this.groupRepository.countGroups()
+      prisma.evaluationCampaign.count(),
+      prisma.evaluationCampaign.count({ where: { status: 'ativa' } }),
+      this.groupRepository.countGroups(),
+      // Calcula média geral direto no banco com aggregate
+      prisma.evaluation.aggregate({ _avg: { media: true } })
     ]);
 
-    const userStats = {
-      total: gestores.pagination.total + colaboradores.pagination.total,
-      porTipo: {
-        gestor: gestores.pagination.total,
-        colaborador: colaboradores.pagination.total
-      }
-    };
-
-    const evaluationStats = {
-      total: evaluations.pagination.total,
-      mediaGeral: evaluations.evaluations.length > 0
-        ? evaluations.evaluations.reduce((sum, ev) => sum + (ev.media || 0), 0) / evaluations.evaluations.length
-        : 0,
-      lista: evaluations.evaluations
-    };
-
-    // Calcular avaliações pendentes (avaliações com status pendente)
-    const avaliacoesPendentes = evaluations.evaluations.filter(ev => !ev.status || ev.status === 'pendente').length;
+    const mediaGeral = mediaGeralResult._avg.media
+      ? parseFloat(mediaGeralResult._avg.media.toFixed(2))
+      : 0;
 
     return {
-      totalUsuarios: userStats.total,
-      totalGestores: userStats.porTipo.gestor,
-      totalColaboradores: userStats.porTipo.colaborador,
-      usuarios: userStats,
-      avaliacoes: evaluationStats,
-      avaliacoesPendentes: avaliacoesPendentes,
-      nineBox: nineBoxStats,
-      totalNineBox: nineBoxStats?.total || 0,
-      competencias: competencyStats,
-      totalCompetencias: competencyStats?.total || competencyStats?.length || 0,
-      campanhas: {
-        total: campaigns.pagination.total,
-        ativas: campaigns.campaigns.filter(c => c.status === 'ativa').length
-      },
-      totalCampanhas: campaigns.pagination.total,
-      campanhasAtivas: campaigns.campaigns.filter(c => c.status === 'ativa').length,
-      grupos: {
-        total: groupsCount
-      },
-      totalGrupos: groupsCount,
-      relatorios: {
-        total: 0 // Relatórios são gerados dinamicamente, não há tabela de relatórios
-      },
-      totalRelatorios: 0,
-      usuariosAtivos: userStats.total || 0, // Considerando todos os usuários como ativos
-      timestamp: new Date().toISOString()
+      totalUsuarios:      totalGestores + totalColaboradores,
+      totalGestores,
+      totalColaboradores,
+      totalAvaliacoes,
+      avaliacoesPendentes: 0,
+      mediaGeral,
+      nineBox:            nineBoxStats,
+      totalNineBox:       nineBoxStats?.total ?? 0,
+      competencias:       competencyStats,
+      totalCompetencias:  competencyStats?.total ?? competencyStats?.length ?? 0,
+      totalCampanhas,
+      campanhasAtivas,
+      totalGrupos:        groupsCount ?? 0,
+      usuariosAtivos:     totalGestores + totalColaboradores,
+      timestamp:          new Date().toISOString()
     };
   }
 
   async getUserReport(userId, requestUserId, requestUserTipo) {
     AuthorizationService.requireOwnerOrAdmin(userId, requestUserId, requestUserTipo);
 
-    const user = await this.userRepository.findById(userId);
+    // Todas as queries em paralelo
+    const [user, evaluationsResult, nineBoxes, evalsMadeResult] = await Promise.all([
+      this.userRepository.findById(userId),
+      // Só busca campos necessários: media, tipoAvaliacao, comentario, data
+      prisma.evaluation.findMany({
+        where: { avaliadoId: userId },
+        select: {
+          id: true,
+          media: true,
+          comentario: true,
+          criterios: true,
+          anonima: true,
+          data: true,
+          createdAt: true,
+          campaign: { select: { id: true, nome: true, tipoAvaliacao: true, tipoAlvo: true, status: true } }
+        },
+        orderBy: { createdAt: 'desc' }
+      }),
+      this.nineBoxRepository.findByPessoa(userId),
+      prisma.evaluation.count({ where: { avaliadorId: userId } })
+    ]);
+
     if (!user) throw new AppError('Usuário não encontrado', 404);
 
-    const evaluationsReceived = await this.evaluationRepository.findByAvaliado(userId, { page: 1, limit: 1000 });
-    const evaluationsMade = await this.evaluationRepository.findByAvaliador(userId, { page: 1, limit: 1000 });
-    const nineBoxes = await this.nineBoxRepository.findByPessoa(userId);
+    const mediaGeral = evaluationsResult.length > 0
+      ? parseFloat((evaluationsResult.reduce((sum, ev) => sum + (ev.media || 0), 0) / evaluationsResult.length).toFixed(2))
+      : 0;
 
-    const receivedStats = {
-      total: evaluationsReceived.evaluations.length,
-      mediaGeral: evaluationsReceived.evaluations.length > 0
-        ? evaluationsReceived.evaluations.reduce((sum, ev) => sum + (ev.media || 0), 0) / evaluationsReceived.evaluations.length
-        : 0
-    };
+    // Calcula médias por critério de forma dinâmica
+    const criteriosMap = {};
+    for (const ev of evaluationsResult) {
+      if (ev.criterios && typeof ev.criterios === 'object') {
+        for (const [chave, valor] of Object.entries(ev.criterios)) {
+          const num = Number(valor);
+          if (!isNaN(num)) {
+            if (!criteriosMap[chave]) criteriosMap[chave] = [];
+            criteriosMap[chave].push(num);
+          }
+        }
+      }
+    }
+    const criteriosMedia = {};
+    for (const [chave, vals] of Object.entries(criteriosMap)) {
+      if (vals.length > 0) {
+        criteriosMedia[chave] = parseFloat((vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(2));
+      }
+    }
 
     const latestNineBox = nineBoxes.length > 0 ? nineBoxes[0] : null;
     delete user.senha;
 
     return {
+      user,
       usuario: user,
-      avaliacoesRecebidas: {
-        ...receivedStats,
-        lista: evaluationsReceived.evaluations
-      },
-      avaliacoesFeitas: {
-        total: evaluationsMade.evaluations.length,
-        lista: evaluationsMade.evaluations
-      },
+      avaliacoesRecebidas:  evaluationsResult.length,
+      avaliacoesFeitas:     evalsMadeResult,
+      mediaGeral,
+      criteriosMedia,
+      ultimasAvaliacoes:    evaluationsResult.slice(0, 10),
       nineBox: {
-        total: nineBoxes.length,
-        ultima: latestNineBox,
+        total:     nineBoxes.length,
+        ultima:    latestNineBox,
         historico: nineBoxes
       },
       timestamp: new Date().toISOString()
@@ -127,11 +148,10 @@ class ReportsService {
     const gestor = await this.userRepository.findById(gestorId);
     if (!gestor) throw new AppError('Gestor não encontrado', 404);
 
-    // Usa o grupo real do gestor
-    const colaboradores = await this.groupRepository.findColaboradoresByGestor(gestorId);
-
-    // Campanhas ativas do gestor
-    const campanhasAtivas = await this.campaignRepository.findActiveForGestor(gestorId);
+    const [colaboradores, campanhasAtivas] = await Promise.all([
+      this.groupRepository.findColaboradoresByGestor(gestorId),
+      this.campaignRepository.findActiveForGestor(gestorId)
+    ]);
 
     return {
       gestor,
