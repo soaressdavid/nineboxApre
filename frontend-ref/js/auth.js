@@ -472,7 +472,7 @@ export function isLoggedIn() {
 export function logout() {
   removeToken();
   removeUser();
-  window.location.href = '/frontend-ref/pages/login.html';
+  window.location.href = '/pages/login.html';
 }
 
 // =============================================
@@ -501,7 +501,7 @@ export function isColaborador() {
  */
 export async function requireAuth() {
   if (!isLoggedIn()) {
-    window.location.href = '/frontend-ref/pages/login.html';
+    window.location.href = '/pages/login.html';
     return false;
   }
   
@@ -542,9 +542,9 @@ export function requireRole(role) {
   if (!allowed[role]) {
     // Se for gestor ou colaborador tentando acessar página de admin, redireciona para avaliações
     if (tipo === 'gestor' || tipo === 'colaborador') {
-      window.location.href = '/frontend-ref/pages/avaliacoes.html';
+      window.location.href = '/pages/avaliacoes.html';
     } else {
-      window.location.href = '/frontend-ref/index.html';
+      window.location.href = '/index.html';
     }
     return false;
   }
@@ -560,7 +560,7 @@ export function requireAdmin() {
 
   const tipo = getUser()?.tipo;
   if (tipo !== 'admin') {
-    window.location.href = '/frontend-ref/pages/avaliacoes.html';
+    window.location.href = '/pages/avaliacoes.html';
     return false;
   }
   return true;
