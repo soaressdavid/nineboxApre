@@ -47,6 +47,9 @@ app.use(cors({
     // Permite requisições sem origin (Postman, curl, mobile apps)
     if (!origin) return callback(null, true);
 
+    // Em produção no Render, aceita qualquer subdomínio onrender.com
+    if (origin.endsWith('.onrender.com')) return callback(null, true);
+
     if (corsOrigins.includes(origin)) {
       callback(null, true);
     } else {
