@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
@@ -941,14 +941,38 @@
         <div class="export-card-check"><i class="fa-solid fa-circle-check"></i></div>
       </label>
 
-      <label class="export-card" data-value="medias">
-        <input type="radio" name="export-type" value="medias" hidden>
-        <div class="export-card-icon" style="background:linear-gradient(135deg,#dbeafe,#bfdbfe);color:#2563eb">
-          <i class="fa-solid fa-chart-bar"></i>
+      <label class="export-card" data-value="ninebox">
+        <input type="radio" name="export-type" value="ninebox" hidden>
+        <div class="export-card-icon" style="background:linear-gradient(135deg,#fae8ff,#f3d4fc);color:#a21caf">
+          <i class="fa-solid fa-th"></i>
         </div>
         <div class="export-card-body">
-          <div class="export-card-title">Médias por Critério</div>
-          <div class="export-card-desc">Média de cada critério de avaliação por colaborador — se adapta aos critérios configurados</div>
+          <div class="export-card-title">Nine Box Completo</div>
+          <div class="export-card-desc">Performance, potencial, categoria e quadrante de cada pessoa classificada</div>
+        </div>
+        <div class="export-card-check"><i class="fa-solid fa-circle-check"></i></div>
+      </label>
+
+      <label class="export-card" data-value="departamentos">
+        <input type="radio" name="export-type" value="departamentos" hidden>
+        <div class="export-card-icon" style="background:linear-gradient(135deg,#e0f2fe,#bae6fd);color:#0284c7">
+          <i class="fa-solid fa-building"></i>
+        </div>
+        <div class="export-card-body">
+          <div class="export-card-title">Médias por Departamento</div>
+          <div class="export-card-desc">Média geral de desempenho e potencial agrupada por departamento</div>
+        </div>
+        <div class="export-card-check"><i class="fa-solid fa-circle-check"></i></div>
+      </label>
+
+      <label class="export-card" data-value="campanhas">
+        <input type="radio" name="export-type" value="campanhas" hidden>
+        <div class="export-card-icon" style="background:linear-gradient(135deg,#ffedd5,#fed7aa);color:#ea580c">
+          <i class="fa-solid fa-bullhorn"></i>
+        </div>
+        <div class="export-card-body">
+          <div class="export-card-title">Progresso das Campanhas</div>
+          <div class="export-card-desc">Todas as campanhas com total de avaliadores, avaliados e % de conclusão</div>
         </div>
         <div class="export-card-check"><i class="fa-solid fa-circle-check"></i></div>
       </label>
@@ -965,18 +989,37 @@
         <div class="export-card-check"><i class="fa-solid fa-circle-check"></i></div>
       </label>
 
-      <label class="export-card" data-value="usuarios">
-        <input type="radio" name="export-type" value="usuarios" hidden>
-        <div class="export-card-icon" style="background:linear-gradient(135deg,#d1fae5,#a7f3d0);color:#059669">
-          <i class="fa-solid fa-users"></i>
+      <label class="export-card" data-value="medias">
+        <input type="radio" name="export-type" value="medias" hidden>
+        <div class="export-card-icon" style="background:linear-gradient(135deg,#dbeafe,#bfdbfe);color:#2563eb">
+          <i class="fa-solid fa-chart-bar"></i>
         </div>
         <div class="export-card-body">
-          <div class="export-card-title">Cadastro de Colaboradores</div>
-          <div class="export-card-desc">Lista de gestores e colaboradores com cargo, departamento e data de cadastro</div>
+          <div class="export-card-title">Médias por Critério</div>
+          <div class="export-card-desc">Média de cada critério de avaliação por colaborador — se adapta aos critérios configurados</div>
         </div>
         <div class="export-card-check"><i class="fa-solid fa-circle-check"></i></div>
       </label>
 
+    </div>
+
+    <!-- Opções avançadas (colapsável) -->
+    <div class="export-advanced-toggle" onclick="toggleExportAvancado(this)">
+      <i class="fa-solid fa-chevron-right export-advanced-chevron"></i>
+      <span>Mais opções</span>
+    </div>
+    <div class="export-advanced-panel" id="export-advanced-panel">
+      <label class="export-card export-card--secondary" data-value="usuarios">
+        <input type="radio" name="export-type" value="usuarios" hidden>
+        <div class="export-card-icon" style="background:linear-gradient(135deg,#d1fae5,#a7f3d0);color:#059669;width:36px;height:36px;font-size:14px;">
+          <i class="fa-solid fa-users"></i>
+        </div>
+        <div class="export-card-body">
+          <div class="export-card-title">Cadastro de Usuários</div>
+          <div class="export-card-desc">Lista administrativa de gestores e colaboradores com cargo, departamento e data de cadastro</div>
+        </div>
+        <div class="export-card-check"><i class="fa-solid fa-circle-check"></i></div>
+      </label>
     </div>
 
     <!-- Loading -->
@@ -1268,6 +1311,38 @@
   .modal-overlay.open {
     display: flex !important;
   }
+
+  /* ── Mais opções (avançado) ──────────────────────────── */
+  .export-advanced-toggle {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 8px 20px 4px;
+    user-select: none;
+    transition: color 0.15s;
+  }
+  .export-advanced-toggle:hover { color: var(--primary); }
+  .export-advanced-chevron {
+    font-size: 10px;
+    transition: transform 0.2s;
+  }
+  .export-advanced-toggle.open .export-advanced-chevron {
+    transform: rotate(90deg);
+  }
+  .export-advanced-panel {
+    display: none;
+    padding: 4px 16px 0;
+  }
+  .export-advanced-panel.open { display: block; }
+  .export-card--secondary {
+    border-style: dashed !important;
+    opacity: 0.85;
+  }
+  .export-card--secondary:hover { opacity: 1; }
 </style>
 
 <!-- Modal de usuários do Nine Box -->
@@ -1779,6 +1854,17 @@
 
   window.fecharModalExportar = function() {
     document.getElementById('modal-exportar').classList.remove('open');
+    // Fechar painel avançado ao fechar o modal
+    const panel = document.getElementById('export-advanced-panel');
+    const toggle = document.querySelector('.export-advanced-toggle');
+    panel?.classList.remove('open');
+    toggle?.classList.remove('open');
+  };
+
+  window.toggleExportAvancado = function(el) {
+    const panel = document.getElementById('export-advanced-panel');
+    el.classList.toggle('open');
+    panel.classList.toggle('open');
   };
 
   window.confirmarExportacao = async function() {
@@ -1795,7 +1881,10 @@
         case 'ranking':    await exportarRankingColaboradores(); break;
         case 'medias':     await exportarMediasPorCriterio();    break;
         case 'avaliacoes': await exportarAvaliacoesDetalhadas(); break;
-        case 'usuarios':   await exportarCadastroUsuarios();     break;
+        case 'usuarios':      await exportarCadastroUsuarios();        break;
+        case 'ninebox':      await exportarNineBoxCSVModal();         break;
+        case 'campanhas':    await exportarProgressoCampanhas();      break;
+        case 'departamentos': await exportarMediasDepartamentos();    break;
       }
       fecharModalExportar();
     } catch (err) {
@@ -2024,6 +2113,163 @@
     ]);
 
     exportarCSV(headers, rows, 'cadastro_usuarios');
+  }
+
+  // ---- NINE BOX COMPLETO (modal) ----
+  async function exportarNineBoxCSVModal() {
+    const nbRes = await nineBoxApi.calculateAll();
+    const nineBoxes = nbRes.data.team || [];
+
+    if (nineBoxes.length === 0) {
+      showToast('Nenhum dado de Nine Box encontrado.', 'warning');
+      return;
+    }
+
+    const CATEGORIAS = {
+      '1-1': 'Q1 (Insuficiente)',   '2-1': 'Q2 (Questionavel)',  '3-1': 'Q3 (Especialista)',
+      '1-2': 'Q4 (Inconsistente)',  '2-2': 'Q5 (Profissional)',  '3-2': 'Q6 (Destaque)',
+      '1-3': 'Q7 (Enigma)',         '2-3': 'Q8 (Alto Potencial)', '3-3': 'Q9 (Estrela)'
+    };
+    const NIVEL = { 1: 'Baixo', 2: 'Medio', 3: 'Alto' };
+    const resolvePos = (nb) => {
+      let perf = nb.gridX ?? null;
+      let pot  = nb.gridY ?? null;
+      if (perf === null && nb.performance != null) { const s = nb.performance; perf = s < 2.01 ? 1 : s < 3.01 ? 2 : 3; }
+      if (pot  === null && nb.potential   != null) { const s = nb.potential;   pot  = s < 2.01 ? 1 : s < 3.01 ? 2 : 3; }
+      return { perf, pot };
+    };
+
+    const headers = [
+      'Nome', 'RA', 'Cargo', 'Departamento',
+      'Performance (score)', 'Performance (nivel)',
+      'Potencial (score)',   'Potencial (nivel)',
+      'Categoria Nine Box',  'Quadrante'
+    ];
+
+    const ordemCats = [
+      'Q9 (Estrela)', 'Q8 (Alto Potencial)', 'Q7 (Enigma)',
+      'Q6 (Destaque)', 'Q5 (Profissional)', 'Q4 (Inconsistente)',
+      'Q3 (Especialista)', 'Q2 (Questionavel)', 'Q1 (Insuficiente)'
+    ];
+
+    const rows = nineBoxes
+      .map(nb => {
+        const { perf, pot } = resolvePos(nb);
+        const p   = nb.pessoa || {};
+        const cat = CATEGORIAS[`${perf}-${pot}`] || '';
+        return { nb, p, perf, pot, cat };
+      })
+      .sort((a, b) =>
+        (ordemCats.indexOf(a.cat) - ordemCats.indexOf(b.cat)) ||
+        (a.p.nome || '').localeCompare(b.p.nome || '')
+      )
+      .map(({ nb, p, perf, pot, cat }) => [
+        p.nome         || '',
+        p.ra           || '',
+        p.cargo        || '',
+        p.departamento || '',
+        nb.performance != null ? Number(nb.performance).toFixed(2) : '',
+        NIVEL[perf]    || '',
+        nb.potential   != null ? Number(nb.potential).toFixed(2)   : '',
+        NIVEL[pot]     || '',
+        cat,
+        `${perf}-${pot}`
+      ]);
+
+    exportarCSV(headers, rows, 'nine_box_completo');
+  }
+
+  // ---- PROGRESSO DAS CAMPANHAS ----
+  async function exportarProgressoCampanhas() {
+    const { campaignsApi, evaluationsApi } = await import('../js/api.js');
+    const [campRes, evalRes] = await Promise.all([
+      campaignsApi.list({ limit: 500 }),
+      evaluationsApi.list({ limit: 5000 })
+    ]);
+
+    const campanhas  = campRes.data.campaigns || campRes.data.campanhas || [];
+    const avaliacoes = evalRes.data.evaluations || evalRes.data.avaliacoes || [];
+
+    const STATUS_LABEL = { ativa: 'Ativa', finalizada: 'Finalizada', planejamento: 'Planejamento', encerrada: 'Encerrada' };
+    const TIPO_LABEL   = { desempenho: 'Desempenho', potencial: 'Potencial' };
+
+    const headers = [
+      'Campanha', 'Tipo', 'Status',
+      'Data Inicio', 'Data Fim',
+      'Total Avaliacoes', 'Avaliados Unicos'
+    ];
+
+    const rows = campanhas.map(c => {
+      const evals = avaliacoes.filter(e => e.campaignId === c.id || e.campaign?.id === c.id);
+      const avaliadosUnicos = new Set(evals.map(e => e.avaliadoId || e.avaliado?.id)).size;
+      return [
+        c.nome || '',
+        TIPO_LABEL[c.tipoAvaliacao] || c.tipoAvaliacao || '',
+        STATUS_LABEL[c.status] || c.status || '',
+        c.dataInicio ? new Date(c.dataInicio).toLocaleDateString('pt-BR') : '',
+        c.dataFim    ? new Date(c.dataFim).toLocaleDateString('pt-BR')    : '',
+        evals.length,
+        avaliadosUnicos
+      ];
+    });
+
+    exportarCSV(headers, rows, 'progresso_campanhas');
+  }
+
+  // ---- MEDIAS POR DEPARTAMENTO ----
+  async function exportarMediasDepartamentos() {
+    const [usersRes, nbRes] = await Promise.all([
+      usersApi.list({ limit: 1000 }),
+      nineBoxApi.calculateAll()
+    ]);
+
+    const users     = usersRes.data.users    || [];
+    const nineBoxes = nbRes.data.team        || [];
+
+    const resolvePos = (nb) => {
+      let perf = nb.gridX ?? null;
+      let pot  = nb.gridY ?? null;
+      if (perf === null && nb.performance != null) { const s = nb.performance; perf = s < 2.01 ? 1 : s < 3.01 ? 2 : 3; }
+      if (pot  === null && nb.potential   != null) { const s = nb.potential;   pot  = s < 2.01 ? 1 : s < 3.01 ? 2 : 3; }
+      return { perf, pot };
+    };
+
+    // Agrupar por departamento
+    const porDept = {};
+    for (const nb of nineBoxes) {
+      const p    = nb.pessoa || {};
+      const dept = p.departamento || 'Sem Departamento';
+      if (!porDept[dept]) porDept[dept] = { performances: [], potenciais: [], membros: new Set() };
+      if (nb.performance != null) porDept[dept].performances.push(Number(nb.performance));
+      if (nb.potential   != null) porDept[dept].potenciais.push(Number(nb.potential));
+      if (p.id) porDept[dept].membros.add(p.id);
+    }
+
+    // Adicionar total de membros de users (incluindo quem nao tem Nine Box)
+    for (const u of users.filter(u => u.tipo === 'colaborador')) {
+      const dept = u.departamento || 'Sem Departamento';
+      if (!porDept[dept]) porDept[dept] = { performances: [], potenciais: [], membros: new Set() };
+      porDept[dept].membros.add(u.id);
+    }
+
+    const avg = arr => arr.length ? (arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(2) : '—';
+
+    const headers = [
+      'Departamento', 'Total Colaboradores', 'Com Nine Box',
+      'Media Desempenho', 'Media Potencial'
+    ];
+
+    const rows = Object.entries(porDept)
+      .map(([dept, d]) => [
+        dept,
+        d.membros.size,
+        d.performances.length,
+        avg(d.performances),
+        avg(d.potenciais)
+      ])
+      .sort((a, b) => String(a[0]).localeCompare(String(b[0])));
+
+    exportarCSV(headers, rows, 'medias_departamentos');
   }
 
   // ---- NINE BOX CSV ----

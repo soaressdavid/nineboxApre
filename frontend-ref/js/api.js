@@ -44,8 +44,9 @@ async function request(endpoint, options = {}, silent = false) {
     const data = await response.json();
 
     if (!response.ok) {
-      // Token expirado ou inválido → logout automático
-      if (response.status === 401) {
+      // Token expirado ou inválido em rota protegida → logout automático
+      // Exceção: endpoint de login — 401 significa credenciais erradas, não sessão expirada
+      if (response.status === 401 && !endpoint.includes('/login')) {
         logout();
         return;
       }
@@ -90,7 +91,8 @@ export const usersApi = {
       await new Promise(resolve => setTimeout(resolve, 500));
       return loginMock(body.email, body.senha);
     }
-    return api.post('/users/login', body);
+    // silent=true para o login tratar o erro ele mesmo (sem toast duplicado)
+    return api.post('/users/login', body, true);
   },
   
   register: async (body) => {

@@ -61,13 +61,14 @@
     .login-field .input-wrap {
       position: relative;
     }
-    .login-field .input-wrap i {
+    .login-field .input-wrap i.field-icon {
       position: absolute;
       left: 12px;
       top: 50%;
       transform: translateY(-50%);
       color: var(--text-muted);
       font-size: 14px;
+      pointer-events: none;
     }
     .login-field input {
       width: 100%;
@@ -86,6 +87,43 @@
       outline: none;
       background: var(--surface);
     }
+    /* Senha com padding extra para o botão olho */
+    #login-senha { padding-right: 42px; }
+    /* garante que o absolute do botão fique dentro do input */
+    #wrap-senha { display: flex; align-items: center; }
+    .toggle-senha {
+      position: absolute;
+      right: 10px;
+      top: 0;
+      bottom: 0;
+      margin: auto;
+      height: 24px;
+      width: 24px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: 14px;
+      padding: 0;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.15s;
+      line-height: 1;
+    }
+    .toggle-senha:hover { color: var(--primary); }
+    /* Shake animation ao errar login */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      15%       { transform: translateX(-7px); }
+      30%       { transform: translateX(7px); }
+      45%       { transform: translateX(-5px); }
+      60%       { transform: translateX(5px); }
+      75%       { transform: translateX(-3px); }
+      90%       { transform: translateX(3px); }
+    }
+    .login-card.shake { animation: shake 0.45s ease; }
     .login-btn {
       width: 100%;
       padding: 13px;
@@ -136,17 +174,19 @@
     <div class="login-field">
       <label for="login-email">E-mail institucional</label>
       <div class="input-wrap">
-        <i class="fa-solid fa-envelope"></i>
+        <i class="fa-solid fa-envelope field-icon"></i>
         <input type="email" id="login-email" placeholder="nome@faculdade.edu.br" autocomplete="email">
       </div>
-      <!-- Erro inline injetado aqui pelo JS -->
     </div>
 
     <div class="login-field">
       <label for="login-senha">Senha</label>
       <div class="input-wrap">
-        <i class="fa-solid fa-lock"></i>
+        <i class="fa-solid fa-lock field-icon"></i>
         <input type="password" id="login-senha" placeholder="Sua senha" autocomplete="current-password">
+        <button type="button" class="toggle-senha" id="toggle-senha" onclick="toggleSenha()" tabindex="-1" title="Mostrar/ocultar senha">
+          <i class="fa-solid fa-eye" id="toggle-senha-icon"></i>
+        </button>
       </div>
     </div>
 
@@ -195,6 +235,33 @@
     window.location.reload();
   };
 
+  window.toggleSenha = function() {
+    const input = document.getElementById('login-senha');
+    const icon  = document.getElementById('toggle-senha-icon');
+    const show  = input.type === 'password';
+    input.type  = show ? 'text' : 'password';
+    icon.className = show ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
+  };
+
+  function resetForm() {
+    const card = document.querySelector('.login-card');
+    card.classList.remove('shake');
+    // force reflow so animation restarts if called twice in a row
+    void card.offsetWidth;
+    card.classList.add('shake');
+    card.addEventListener('animationend', () => card.classList.remove('shake'), { once: true });
+
+    document.getElementById('login-email').value = '';
+    document.getElementById('login-senha').value = '';
+    // restaura olho para oculto
+    const input = document.getElementById('login-senha');
+    const icon  = document.getElementById('toggle-senha-icon');
+    input.type  = 'password';
+    icon.className = 'fa-solid fa-eye';
+
+    document.getElementById('login-email').focus();
+  }
+
   window.fazerLogin = async function() {
     const email = document.getElementById('login-email').value.trim();
     const senha = document.getElementById('login-senha').value;
@@ -217,7 +284,27 @@
         window.location.href = '../index.html';
       }
     } catch (err) {
-      // Erro já exibido pelo api.js via toast
+      const card = document.querySelector('.login-card');
+      card.classList.remove('shake');
+      void card.offsetWidth;
+      card.classList.add('shake');
+      card.addEventListener('animationend', () => card.classList.remove('shake'), { once: true });
+
+      // Detectar mensagem específica da API
+      const status = err?.response?.status;
+      let msg = 'E-mail ou senha incorretos.';
+      if (status === 429) msg = 'Muitas tentativas. Aguarde alguns minutos.';
+      else if (status === 500) msg = 'Erro no servidor. Tente novamente.';
+
+      showToast(msg, 'error');
+
+      // Limpar só a senha, manter o e-mail para facilitar nova tentativa
+      const senhaInput = document.getElementById('login-senha');
+      const icon       = document.getElementById('toggle-senha-icon');
+      senhaInput.value = '';
+      senhaInput.type  = 'password';
+      icon.className   = 'fa-solid fa-eye';
+      senhaInput.focus();
     } finally {
       btn.disabled = false;
       btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Entrar';
