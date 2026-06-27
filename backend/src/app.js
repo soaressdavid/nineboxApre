@@ -33,28 +33,21 @@ app.use(generalLimiter);
 // CORS — origens permitidas carregadas do ambiente
 // Em produção, defina CORS_ORIGINS=https://app.empresa.com,https://www.empresa.com
 // Em desenvolvimento, o fallback cobre localhost com as portas mais comuns
+// CORS — aceita todas as origens (configuração para deploy no Render)
+// Para restringir origens, defina CORS_ORIGINS=https://app.empresa.com
 const corsOrigins = process.env.CORS_ORIGINS
   ? process.env.CORS_ORIGINS.split(',').map(o => o.trim())
-  : [
-      'http://localhost:5500',
-      'http://127.0.0.1:5500',
-      'http://localhost:3000',
-      'http://127.0.0.1:3000'
-    ];
+  : null;
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Permite requisições sem origin (Postman, curl, mobile apps)
+    // Sem origin (Postman, curl, apps mobile) — sempre permite
     if (!origin) return callback(null, true);
-
-    // Em produção no Render, aceita qualquer subdomínio onrender.com
-    if (origin.endsWith('.onrender.com')) return callback(null, true);
-
-    if (corsOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error(`CORS: origem não permitida — ${origin}`));
-    }
+    // Se não há lista restritiva, permite tudo
+    if (!corsOrigins) return callback(null, true);
+    // Verifica lista explícita
+    if (corsOrigins.includes(origin)) return callback(null, true);
+    callback(new Error(`CORS: origem não permitida — ${origin}`));
   },
   credentials: true
 }));
